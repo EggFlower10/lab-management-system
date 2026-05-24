@@ -1,0 +1,126 @@
+{
+  "users": [
+    { "id": 1, "username": "admin", "name": "管理员", "email": "admin@example.com", "status": 1 },
+    { "id": 2, "username": "user1", "name": "用户1", "email": "user1@example.com", "status": 1 }
+  ],
+  "roles": [
+    { "id": 1, "name": "管理员", "code": "admin", "status": 1 },
+    { "id": 2, "name": "教师", "code": "teacher", "status": 1 },
+    { "id": 3, "name": "学生", "code": "student", "status": 1 }
+  ],
+  "menus": [
+    {
+      "id": 1,
+      "name": "系统管理",
+      "path": "/system",
+      "icon": "el-icon-setting",
+      "children": [
+        { "id": 11, "name": "用户管理", "path": "/system/user", "icon": "el-icon-user" },
+        { "id": 12, "name": "角色管理", "path": "/system/role", "icon": "el-icon-s-custom" },
+        { "id": 13, "name": "菜单管理", "path": "/system/menu", "icon": "el-icon-menu" },
+        { "id": 14, "name": "权限管理", "path": "/system/permission", "icon": "el-icon-lock" },
+        { "id": 15, "name": "机构管理", "path": "/system/organization", "icon": "el-icon-office-building" },
+        { "id": 16, "name": "部门管理", "path": "/system/department", "icon": "el-icon-s-grid" },
+        { "id": 17, "name": "操作日志", "path": "/system/log", "icon": "el-icon-document" },
+        { "id": 18, "name": "系统配置", "path": "/system/config", "icon": "el-icon-s-tools" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "教学信息管理",
+      "path": "/teaching",
+      "icon": "el-icon-reading",
+      "children": [
+        { "id": 21, "name": "课程管理", "path": "/teaching/course", "icon": "el-icon-notebook-2" },
+        { "id": 22, "name": "学期管理", "path": "/teaching/semester", "icon": "el-icon-date" },
+        { "id": 23, "name": "校历查看", "path": "/teaching/calendar", "icon": "el-icon-calendar" },
+        { "id": 24, "name": "专业管理", "path": "/teaching/major", "icon": "el-icon-collection-tag" },
+        { "id": 25, "name": "班级管理", "path": "/teaching/class", "icon": "el-icon-s-marketing" },
+        { "id": 26, "name": "教学任务", "path": "/teaching/task", "icon": "el-icon-document-copy" },
+        { "id": 27, "name": "节次管理", "path": "/teaching/time-slot", "icon": "el-icon-time" }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "场馆信息管理",
+      "path": "/venue",
+      "icon": "el-icon-office-building",
+      "children": [
+        { "id": 31, "name": "校区管理", "path": "/venue/campus", "icon": "el-icon-map-location" },
+        { "id": 32, "name": "楼宇管理", "path": "/venue/building", "icon": "el-icon-s-home" },
+        { "id": 33, "name": "房间管理", "path": "/venue/room", "icon": "el-icon-house" },
+        { "id": 34, "name": "楼层平面图", "path": "/venue/floor-plan", "icon": "el-icon-picture-outline" }
+      ]
+    }
+  ],
+  "permissions": [
+    { "id": 1, "name": "用户管理", "code": "user:manage", "status": 1 },
+    { "id": 2, "name": "角色管理", "code": "role:manage", "status": 1 }
+  ],
+  "organizations": [
+    { "id": 1, "name": "学校", "code": "school", "status": 1 },
+    { "id": 2, "name": "计算机学院", "code": "cs", "status": 1 }
+  ],
+  "departments": [
+    { "id": 1, "name": "教务处", "code": "jiaowu", "status": 1 },
+    { "id": 2, "name": "计算机系", "code": "computer", "status": 1 }
+  ],
+  "logs": [
+    { "id": 1, "user_id": 1, "action": "登录", "ip": "127.0.0.1", "created_at": "2026-04-10 10:00:00" }
+  ],
+  "configs": [
+    { "id": 1, "key": "system_name", "value": "高校实验室信息管理系统", "status": 1 },
+    { "id": 2, "key": "version", "value": "1.0.0", "status": 1 }
+  ],
+  "courses": [
+    { "id": 1, "name": "高等数学", "code": "MA001", "type": "公共课", "credit": 4, "hours": 64, "status": 1 },
+    { "id": 2, "name": "大学物理", "code": "PH001", "type": "公共课", "credit": 3, "hours": 48, "status": 1 },
+    { "id": 3, "name": "程序设计", "code": "CS001", "type": "专业课", "credit": 4, "hours": 64, "status": 1 }
+  ],
+  "semesters": [
+    { "id": 1, "name": "2025-2026学年第一学期", "code": "2025-1", "start_date": "2025-09-01", "end_date": "2025-12-31", "status": 1 },
+    { "id": 2, "name": "2025-2026学年第二学期", "code": "2026-2", "start_date": "2026-02-20", "end_date": "2026-06-30", "status": 0 }
+  ],
+  "calendars": [
+    { "id": 1, "semester_id": 1, "date": "2025-09-01", "type": "start", "description": "学期开始" }
+  ],
+  "majors": [
+    { "id": 1, "name": "计算机科学与技术", "code": "CS", "degree": "工学", "duration": 4, "status": 1 },
+    { "id": 2, "name": "电子信息工程", "code": "EE", "degree": "工学", "duration": 4, "status": 1 },
+    { "id": 3, "name": "机械工程", "code": "ME", "degree": "工学", "duration": 4, "status": 1 }
+  ],
+  "classes": [
+    { "id": 1, "name": "计算机2023-1班", "code": "CS2023-1", "grade": "2023", "student_count": 45, "head_teacher": "张老师", "status": 1 },
+    { "id": 2, "name": "电子2023-1班", "code": "EE2023-1", "grade": "2023", "student_count": 40, "head_teacher": "李老师", "status": 1 }
+  ],
+  "teaching-tasks": [
+    { "id": 1, "semester_id": 1, "course_id": 1, "class_id": 1, "weekly_hours": 4, "total_hours": 64, "classroom": "101教室", "status": 1 }
+  ],
+  "time-slots": [
+    { "id": 1, "name": "第一节", "start_time": "08:00:00", "end_time": "08:45:00", "type": "morning", "sort": 1, "status": 1 },
+    { "id": 2, "name": "第二节", "start_time": "08:55:00", "end_time": "09:40:00", "type": "morning", "sort": 2, "status": 1 },
+    { "id": 3, "name": "第三节", "start_time": "10:00:00", "end_time": "10:45:00", "type": "morning", "sort": 3, "status": 1 },
+    { "id": 4, "name": "第四节", "start_time": "10:55:00", "end_time": "11:40:00", "type": "morning", "sort": 4, "status": 1 },
+    { "id": 5, "name": "第五节", "start_time": "14:00:00", "end_time": "14:45:00", "type": "afternoon", "sort": 5, "status": 1 },
+    { "id": 6, "name": "第六节", "start_time": "14:55:00", "end_time": "15:40:00", "type": "afternoon", "sort": 6, "status": 1 },
+    { "id": 7, "name": "第七节", "start_time": "16:00:00", "end_time": "16:45:00", "type": "afternoon", "sort": 7, "status": 1 },
+    { "id": 8, "name": "第八节", "start_time": "16:55:00", "end_time": "17:40:00", "type": "afternoon", "sort": 8, "status": 1 },
+    { "id": 9, "name": "第九节", "start_time": "19:00:00", "end_time": "19:45:00", "type": "evening", "sort": 9, "status": 1 },
+    { "id": 10, "name": "第十节", "start_time": "19:55:00", "end_time": "20:40:00", "type": "evening", "sort": 10, "status": 1 }
+  ],
+  "campuses": [
+    { "id": 1, "name": "主校区", "code": "main", "address": "北京市海淀区学院路30号", "status": 1 },
+    { "id": 2, "name": "分校区", "code": "branch", "address": "北京市昌平区回龙观", "status": 1 }
+  ],
+  "buildings": [
+    { "id": 1, "name": "第一教学楼", "code": "TEACH-01", "campus_id": 1, "floors": 6, "type": "教学", "status": 1 },
+    { "id": 2, "name": "实验楼", "code": "LAB-01", "campus_id": 1, "floors": 5, "type": "实验", "status": 1 }
+  ],
+  "rooms": [
+    { "id": 1, "name": "101教室", "code": "ROOM-101", "building_id": 1, "floor": 1, "area": 80, "capacity": 50, "type": "教室", "status": 1 },
+    { "id": 2, "name": "201实验室", "code": "ROOM-201", "building_id": 2, "floor": 2, "area": 120, "capacity": 30, "type": "实验室", "status": 1 }
+  ],
+  "floor-plans": [
+    { "id": 1, "building_id": 1, "floor": 1, "image_url": "https://example.com/floor1.jpg", "description": "一层平面图" }
+  ]
+}
