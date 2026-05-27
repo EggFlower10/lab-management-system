@@ -6,6 +6,8 @@ const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 const dayjs = require('dayjs');
+const multer = require('multer');
+const XLSX = require('xlsx');
 
 const app = express();
 const port = 7002;
@@ -13,6 +15,27 @@ const port = 7002;
 // 中间件
 app.use(cors());
 app.use(express.json());
+
+// Multer 配置
+const upload = multer({
+  dest: 'uploads/',
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
+    ];
+    if (allowedTypes.includes(file.mimetype) || 
+        file.originalname.endsWith('.xlsx') || 
+        file.originalname.endsWith('.xls')) {
+      cb(null, true);
+    } else {
+      cb(new Error('只允许上传Excel文件'));
+    }
+  }
+});
 
 app.use((req, res, next) => {
   const originalSetHeader = res.setHeader.bind(res);
@@ -30,6 +53,7 @@ app.use((req, res, next) => {
 
 // SQLite 数据库实例
 let db;
+const dbPath = path.join(__dirname, 'database', 'lab_management.db');
 
 // 初始化数据库连接
 async function initDatabase() {
@@ -37,8 +61,6 @@ async function initDatabase() {
     const SQL = await initSqlJs({
       locateFile: file => `node_modules/sql.js/dist/${file}`
     });
-
-    const dbPath = path.join(__dirname, 'database', 'lab_management.db');
 
     if (fs.existsSync(dbPath)) {
       const data = fs.readFileSync(dbPath);
@@ -69,19 +91,24 @@ async function initDatabase() {
 
             let results = [];
 
-            if (upperSql.includes('COUNT(*)') || upperSql.includes('COUNT(')) {
-              try {
-                const stmt = db.prepare(sql);
-                if (params.length > 0) {
-                  const safeParams = params.map(p => p === undefined ? null : p);
-                  stmt.bind(safeParams);
-                }
-                if (stmt.step()) {
-                  results.push(stmt.getAsObject());
-                }
-                stmt.free();
-              } catch (e) {
-                const execResults = db.exec(sql.replace(/\?/g, 'NULL'));
+            // 统一使用 prepare 语句执行所有查询
+            try {
+              const stmt = db.prepare(sql);
+              
+              if (params.length > 0) {
+                const safeParams = params.map(p => p === undefined ? null : p);
+                stmt.bind(safeParams);
+              }
+              
+              while (stmt.step()) {
+                results.push(stmt.getAsObject());
+              }
+              stmt.free();
+            } catch (e) {
+              console.error('查询执行失败，尝试备用方案:', e);
+              // 如果 prepare 失败，尝试使用 exec 方式（仅用于无参数查询）
+              if (params.length === 0) {
+                const execResults = db.exec(sql);
                 if (execResults.length > 0 && execResults[0].values) {
                   const columns = execResults[0].columns;
                   execResults[0].values.forEach(row => {
@@ -92,31 +119,9 @@ async function initDatabase() {
                     results.push(obj);
                   });
                 }
+              } else {
+                throw e;
               }
-            } else if (upperSql.includes('SUM(') || upperSql.includes('AVG(') || upperSql.includes('MAX(') || upperSql.includes('MIN(')) {
-              const execResults = db.exec(sql);
-              if (execResults.length > 0 && execResults[0].values) {
-                const columns = execResults[0].columns;
-                execResults[0].values.forEach(row => {
-                  const obj = {};
-                  row.forEach((val, idx) => {
-                    obj[columns[idx]] = val;
-                  });
-                  results.push(obj);
-                });
-              }
-            } else {
-              const stmt = db.prepare(sql);
-
-              if (params.length > 0) {
-                const safeParams = params.map(p => p === undefined ? null : p);
-                stmt.bind(safeParams);
-              }
-
-              while (stmt.step()) {
-                results.push(stmt.getAsObject());
-              }
-              stmt.free();
             }
 
             // 检查是否是 INSERT/UPDATE/DELETE 语句
@@ -146,7 +151,6 @@ async function initDatabase() {
     }
 
     // 定时保存数据库到文件（每30秒）
-    const dbPath = path.join(__dirname, 'database', 'lab_management.db');
     setInterval(() => {
       try {
         const data = db.export();
@@ -217,6 +221,93 @@ function authenticateToken(req, res, next) {
 // 统一响应格式
 function sendResponse(res, data = null, message = '成功', code = 200) {
   res.json({ code, message, data });
+}
+
+// 辅助函数 - 获取分类列表
+async function getCategoryList() {
+  try {
+    const [rows] = await pool.query('SELECT id, name FROM equ_category WHERE status = 1 ORDER BY sort_order');
+    return rows;
+  } catch (error) {
+    console.error('获取分类列表失败:', error);
+    return [];
+  }
+}
+
+// 辅助函数 - 获取用户列表
+async function getUserList() {
+  try {
+    const [rows] = await pool.query('SELECT UserID, UserName, RealName FROM sys_user ORDER BY UserID');
+    return rows;
+  } catch (error) {
+    console.error('获取用户列表失败:', error);
+    return [];
+  }
+}
+
+// 辅助函数 - 获取部门列表
+async function getDepartmentList() {
+  try {
+    const [rows] = await pool.query('SELECT DeptID, DeptName FROM sys_department ORDER BY DeptID');
+    return rows;
+  } catch (error) {
+    console.error('获取部门列表失败:', error);
+    return [];
+  }
+}
+
+// 辅助函数 - 根据资产编号获取设备
+async function getEquipmentByAssetCode(asset_code) {
+  try {
+    const [rows] = await pool.query('SELECT * FROM equ_equipment WHERE asset_code = ?', [asset_code]);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    console.error('获取设备失败:', error);
+    return null;
+  }
+}
+
+// 辅助函数 - 格式化日期
+function formatDate(date) {
+  if (!date) return '-';
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleString('zh-CN');
+  } catch (error) {
+    return '-';
+  }
+}
+
+// 辅助函数 - 获取状态文本
+function getStatusText(status) {
+  const map = {
+    available: '在库-可用',
+    maintenance: '在库-待维修',
+    reserved: '在库-已预约',
+    borrowed: '借出',
+    repairing: '送修',
+    scrapped: '报废',
+    lost: '丢失',
+    pending: '待审批',
+    pending_teacher: '待导师审批',
+    pending_admin: '待管理员审批',
+    approved: '已审批',
+    rejected: '已拒绝',
+    returned: '已归还',
+    overdue: '逾期'
+  };
+  return map[status] || status || '-';
+}
+
+// 辅助函数 - 获取归还状态文本
+function getReturnStatusText(status) {
+  const map = {
+    returned: '完好',
+    damaged: '损坏',
+    missing_parts: '缺件'
+  };
+  return map[status] || status || '-';
 }
 
 // 登录接口
@@ -299,11 +390,11 @@ app.get('/api/v1/users/:id', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/v1/users', authenticateToken, async (req, res) => {
-  const { UserName, Password, RealName, EmployeeNo, Gender, Mobile, Email, MainInstitutionID, MainDepartmentID, UserType, Status } = req.body;
+  const { UserName, Password, RealName, Mobile, Email, MainDepartmentID, Status } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO Sys_User (UserName, Password, RealName, EmployeeNo, Gender, Mobile, Email, MainInstitutionID, MainDepartmentID, UserType, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [UserName, Password || '123456', RealName, EmployeeNo, Gender, Mobile, Email, MainInstitutionID, MainDepartmentID, UserType, Status || 1]
+      'INSERT INTO sys_user (UserName, Password, RealName, Mobile, Email, MainDepartmentID, Status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [UserName, Password || '123456', RealName, Mobile, Email, MainDepartmentID, Status || 1]
     );
     sendResponse(res, { UserID: result.insertId });
   } catch (error) {
@@ -314,11 +405,11 @@ app.post('/api/v1/users', authenticateToken, async (req, res) => {
 
 app.put('/api/v1/users/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { UserName, RealName, EmployeeNo, Gender, Mobile, Email, MainInstitutionID, MainDepartmentID, UserType, Status } = req.body;
+  const { UserName, RealName, Mobile, Email, MainDepartmentID, Status } = req.body;
   try {
     await pool.query(
-      'UPDATE Sys_User SET UserName = ?, RealName = ?, EmployeeNo = ?, Gender = ?, Mobile = ?, Email = ?, MainInstitutionID = ?, MainDepartmentID = ?, UserType = ?, Status = ? WHERE UserID = ?',
-      [UserName, RealName, EmployeeNo, Gender, Mobile, Email, MainInstitutionID, MainDepartmentID, UserType, Status, id]
+      'UPDATE sys_user SET UserName = ?, RealName = ?, Mobile = ?, Email = ?, MainDepartmentID = ?, Status = ? WHERE UserID = ?',
+      [UserName, RealName, Mobile, Email, MainDepartmentID, Status, id]
     );
     sendResponse(res);
   } catch (error) {
@@ -577,11 +668,11 @@ app.get('/api/v1/courses', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/v1/courses', authenticateToken, async (req, res) => {
-  const { CourseCode, CourseName, CourseNameEn, CourseNature, Credits, TotalHours, LectureHours, PracticeHours, LabHours, OnlineHours, OpenSemesters, Status, SortOrder, Description } = req.body;
+  const { CourseCode, CourseName, CourseType, Credit, Hours, SortOrder, Description, Status } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO Edu_Course (CourseCode, CourseName, CourseNameEn, CourseNature, Credits, TotalHours, LectureHours, PracticeHours, LabHours, OnlineHours, OpenSemesters, Status, SortOrder, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [CourseCode, CourseName, CourseNameEn, CourseNature, Credits, TotalHours, LectureHours, PracticeHours, LabHours, OnlineHours, OpenSemesters, Status || 1, SortOrder || 0, Description]
+      'INSERT INTO Edu_Course (CourseCode, CourseName, CourseType, Credit, Hours, SortOrder, Description, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [CourseCode, CourseName, CourseType, Credit, Hours, SortOrder || 0, Description, Status || 1]
     );
     sendResponse(res, { CourseID: result.insertId });
   } catch (error) {
@@ -862,11 +953,11 @@ app.get('/api/v1/buildings', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/v1/buildings', authenticateToken, async (req, res) => {
-  const { BuildingCode, BuildingName, BuildingNameEn, Address, TotalFloors, Area, BuildYear, UseType, Status, SortOrder, Description } = req.body;
+  const { BuildingCode, BuildingName, BuildingNameEn, CampusID, Address, TotalFloors, Area, BuildYear, UseType, Status, SortOrder, Description } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO Ven_Building (BuildingCode, BuildingName, BuildingNameEn, Address, TotalFloors, Area, BuildYear, UseType, Status, SortOrder, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [BuildingCode, BuildingName, BuildingNameEn, Address, TotalFloors, Area, BuildYear, UseType, Status || 1, SortOrder || 0, Description]
+      'INSERT INTO Ven_Building (BuildingCode, BuildingName, BuildingNameEn, CampusID, Address, TotalFloors, Area, BuildYear, UseType, Status, SortOrder, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [BuildingCode, BuildingName, BuildingNameEn, CampusID, Address, TotalFloors, Area, BuildYear, UseType, Status || 1, SortOrder || 0, Description]
     );
     sendResponse(res, { BuildingID: result.insertId });
   } catch (error) {
@@ -924,11 +1015,11 @@ app.get('/api/v1/rooms', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/v1/rooms', authenticateToken, async (req, res) => {
-  const { RoomCode, RoomName, BuildingID, FloorNo, RoomNumber, SeatCount, Area, RoomType, Photo, IsAvailable, Status, SortOrder, Description } = req.body;
+  const { RoomCode, RoomName, BuildingID, Floor, Area, Capacity, RoomType, Equipment, Status, SortOrder, Description } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO Ven_Room (RoomCode, RoomName, BuildingID, FloorNo, RoomNumber, SeatCount, Area, RoomType, Photo, IsAvailable, Status, SortOrder, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [RoomCode, RoomName, BuildingID, FloorNo, RoomNumber, SeatCount, Area, RoomType, Photo, IsAvailable || 1, Status || 1, SortOrder || 0, Description]
+      'INSERT INTO Ven_Room (RoomCode, RoomName, BuildingID, Floor, Area, Capacity, RoomType, Equipment, Status, SortOrder, Description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [RoomCode, RoomName, BuildingID, Floor, Area, Capacity, RoomType, Equipment, Status || 1, SortOrder || 0, Description]
     );
     sendResponse(res, { RoomID: result.insertId });
   } catch (error) {
@@ -939,11 +1030,11 @@ app.post('/api/v1/rooms', authenticateToken, async (req, res) => {
 
 app.put('/api/v1/rooms/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { RoomCode, RoomName, BuildingID, FloorNo, RoomNumber, SeatCount, Area, RoomType, Photo, IsAvailable, Status, SortOrder, Description } = req.body;
+  const { RoomCode, RoomName, BuildingID, Floor, Area, Capacity, RoomType, Equipment, Status, SortOrder, Description } = req.body;
   try {
     await pool.query(
-      'UPDATE Ven_Room SET RoomCode = ?, RoomName = ?, BuildingID = ?, FloorNo = ?, RoomNumber = ?, SeatCount = ?, Area = ?, RoomType = ?, Photo = ?, IsAvailable = ?, Status = ?, SortOrder = ?, Description = ? WHERE RoomID = ?',
-      [RoomCode, RoomName, BuildingID, FloorNo, RoomNumber, SeatCount, Area, RoomType, Photo, IsAvailable, Status, SortOrder, Description, id]
+      'UPDATE Ven_Room SET RoomCode = ?, RoomName = ?, BuildingID = ?, Floor = ?, Area = ?, Capacity = ?, RoomType = ?, Equipment = ?, Status = ?, SortOrder = ?, Description = ? WHERE RoomID = ?',
+      [RoomCode, RoomName, BuildingID, Floor, Area, Capacity, RoomType, Equipment, Status, SortOrder, Description, id]
     );
     sendResponse(res);
   } catch (error) {
@@ -1026,11 +1117,11 @@ app.get('/api/v1/menus', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/v1/menus', authenticateToken, async (req, res) => {
-  const { name, code, path, icon, parent_id, sort, status } = req.body;
+  const { name, path, component, icon, parent_id, sort, type, visible, status } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO sys_menu (name, code, path, icon, parent_id, sort, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [name, code, path, icon, parent_id || 0, sort || 0, status || 1]
+      'INSERT INTO sys_menu (name, path, component, icon, parent_id, sort, type, visible, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [name, path, component, icon, parent_id || 0, sort || 0, type || 'menu', visible || 1, status || 1]
     );
     sendResponse(res, { id: result.insertId });
   } catch (error) {
@@ -1957,22 +2048,36 @@ app.post('/api/v1/export/training-plan', authenticateToken, async (req, res) => 
 
 async function initTestData() {
   try {
-    const [result] = await pool.query('SELECT COUNT(*) as cnt FROM edu_teaching_task');
-    if (result[0].cnt === 0) {
-      await pool.query(
-        'INSERT INTO edu_teaching_task (semester_id, course_id, class_id, teacher_id, weekly_hours, total_hours, classroom, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [1, 1, 1, 2, 4, 64, '101教室', 1]
-      );
-      console.log('已插入教学任务测试数据');
+    const [tables] = await pool.query("SELECT name FROM sqlite_master WHERE type='table' AND name='edu_teaching_task'");
+    if (tables.length > 0) {
+      const [result] = await pool.query('SELECT COUNT(*) as cnt FROM edu_teaching_task');
+      if (result[0].cnt === 0) {
+        await pool.query(
+          'INSERT INTO edu_teaching_task (semester_id, course_id, class_id, teacher_id, weekly_hours, total_hours, classroom, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [1, 1, 1, 2, 4, 64, '101教室', 1]
+        );
+        console.log('已插入教学任务测试数据');
+      }
     }
   } catch (error) {
     console.error('初始化测试数据失败:', error);
   }
 }
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
 // 启动服务器
 initDatabase().then(async () => {
+  console.log('数据库初始化成功，开始初始化测试数据...');
   await initTestData();
+  console.log('测试数据初始化完成');
 
   // ==================== 实验室排课预约模块路由 ====================
 
@@ -2092,7 +2197,7 @@ initDatabase().then(async () => {
       const reservation = reservations[0];
       const approved = approvalStatus === 'approved';
 
-      await pool.query('UPDATE lab_reservation SET approval_status = ?, approval_comment = ?, updated_at = NOW() WHERE id = ?', [approvalStatus, approvalComment, id]);
+      await pool.query('UPDATE lab_reservation SET approval_status = ?, approval_comment = ?, updated_at = datetime("now") WHERE id = ?', [approvalStatus, approvalComment, id]);
 
       if (approved) {
         const schedulingCode = 'RV-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
@@ -2124,7 +2229,7 @@ initDatabase().then(async () => {
 
       const reservation = reservations[0];
 
-      await pool.query('UPDATE lab_reservation SET approval_status = "cancelled", cancel_reason = ?, updated_at = NOW() WHERE id = ?', [cancelReason || '用户取消', id]);
+      await pool.query('UPDATE lab_reservation SET approval_status = "cancelled", cancel_reason = ?, updated_at = datetime("now") WHERE id = ?', [cancelReason || '用户取消', id]);
 
       if (reservation.approval_status === 'approved') {
         await pool.query('UPDATE lab_scheduling SET status = 0 WHERE room_id = ? AND week_no = ? AND week_day = ? AND time_slot_start = ? AND source_type = "Reservation"',
@@ -2316,10 +2421,137 @@ initDatabase().then(async () => {
     }
   });
 
+const sendNotification = async (userId, userName, notificationType, title, content, relatedType = null, relatedId = null) => {
+  try {
+    const notificationCode = 'NOTIFY_' + Date.now();
+    await pool.query(
+      'INSERT INTO lab_notification (notification_code, user_id, user_name, notification_type, title, content, related_type, related_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [notificationCode, userId, userName, notificationType, title, content, relatedType, relatedId]
+    );
+    console.log(`通知已发送: ${title} -> ${userName}`);
+    return true;
+  } catch (error) {
+    console.error('发送通知失败:', error);
+    return false;
+  }
+};
+
+const sendNotificationToRole = async (role, notificationType, title, content, relatedType = null, relatedId = null) => {
+  try {
+    const [users] = await pool.query('SELECT id, RealName as name FROM sys_user WHERE role = ?', [role]);
+    for (const user of users) {
+      await sendNotification(user.id, user.name, notificationType, title, content, relatedType, relatedId);
+    }
+    return true;
+  } catch (error) {
+    console.error('发送角色通知失败:', error);
+    return false;
+  }
+};
+
+const sendOverdueReminder = async () => {
+  try {
+    const [overdueRecords] = await pool.query(`
+      SELECT b.*, e.name as equipment_name, a.RealName as applicant_name
+      FROM equ_borrow_record b
+      LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+      LEFT JOIN sys_user a ON b.applicant_id = a.UserID
+      WHERE b.status = 'borrowed' AND b.expect_return_date < datetime('now')
+    `);
+    
+    for (const record of overdueRecords) {
+      const days = Math.floor((new Date() - new Date(record.expect_return_date)) / (1000 * 60 * 60 * 24));
+      const content = `您借用的【${record.equipment_name}】已逾期${days}天，请尽快归还。借单号：${record.borrow_code}`;
+      await sendNotification(record.applicant_id, record.applicant_name, 'overdue', '设备逾期提醒', content, 'borrow', record.id);
+    }
+    
+    console.log(`逾期提醒已发送: ${overdueRecords.length} 条`);
+    return overdueRecords.length;
+  } catch (error) {
+    console.error('发送逾期提醒失败:', error);
+    return 0;
+  }
+};
+
+const sendCalibrationReminder = async () => {
+  try {
+    const [equipments] = await pool.query(`
+      SELECT e.*, a.RealName as responsible_name
+      FROM equ_equipment e
+      LEFT JOIN sys_user a ON e.responsible_id = a.UserID
+      WHERE e.calibration_date IS NOT NULL AND e.calibration_date >= date('now') AND e.calibration_date <= date('now', '+7 days')
+    `);
+    
+    for (const equipment of equipments) {
+      const content = `【${equipment.name}】(${equipment.asset_code}) 检定日期即将到期，请及时安排检定。`;
+      if (equipment.responsible_id) {
+        await sendNotification(equipment.responsible_id, equipment.responsible_name, 'calibration', '检定到期提醒', content, 'equipment', equipment.id);
+      }
+      await sendNotificationToRole('admin', 'calibration', '检定到期提醒', content, 'equipment', equipment.id);
+    }
+    
+    console.log(`检定提醒已发送: ${equipments.length} 条`);
+    return equipments.length;
+  } catch (error) {
+    console.error('发送检定提醒失败:', error);
+    return 0;
+  }
+};
+
+app.get('/api/v1/notification/send-test', authenticateToken, async (req, res) => {
+  try {
+    await sendNotification(req.user.id, req.user.name, 'test', '测试通知', '这是一条测试通知');
+    sendResponse(res, null, '测试通知已发送');
+  } catch (error) {
+    console.error('发送测试通知失败:', error);
+    sendResponse(res, null, '发送测试通知失败', 500);
+  }
+});
+
+app.get('/api/v1/notification/send-overdue', authenticateToken, async (req, res) => {
+  try {
+    const count = await sendOverdueReminder();
+    sendResponse(res, { count }, `已发送 ${count} 条逾期提醒`);
+  } catch (error) {
+    console.error('发送逾期提醒失败:', error);
+    sendResponse(res, null, '发送逾期提醒失败', 500);
+  }
+});
+
+app.get('/api/v1/notification/send-calibration', authenticateToken, async (req, res) => {
+  try {
+    const count = await sendCalibrationReminder();
+    sendResponse(res, { count }, `已发送 ${count} 条检定提醒`);
+  } catch (error) {
+    console.error('发送检定提醒失败:', error);
+    sendResponse(res, null, '发送检定提醒失败', 500);
+  }
+});
+
+app.get('/api/v1/notification/count-unread', authenticateToken, async (req, res) => {
+  try {
+    const [result] = await pool.query('SELECT COUNT(*) as count FROM lab_notification WHERE user_id = ? AND is_read = 0', [req.user.id]);
+    sendResponse(res, { count: result[0]?.count || 0 });
+  } catch (error) {
+    console.error('获取未读消息数量错误:', error);
+    sendResponse(res, null, '获取未读消息数量失败', 500);
+  }
+});
+
+app.put('/api/v1/notification/all-read', authenticateToken, async (req, res) => {
+  try {
+    await pool.query('UPDATE lab_notification SET is_read = 1 WHERE user_id = ?', [req.user.id]);
+    sendResponse(res, null, '全部标为已读成功');
+  } catch (error) {
+    console.error('全部标为已读错误:', error);
+    sendResponse(res, null, '全部标为已读失败', 500);
+  }
+});
+
   // 获取消息列表
   app.get('/api/v1/notification', authenticateToken, async (req, res) => {
     try {
-      const [rows] = await pool.query('SELECT * FROM lab_notification WHERE user_id = ? AND deleted_at IS NULL ORDER BY created_at DESC', [req.user.id]);
+      const [rows] = await pool.query('SELECT * FROM lab_notification WHERE user_id = ? ORDER BY created_at DESC', [req.user.id]);
       sendResponse(res, rows);
     } catch (error) {
       console.error('获取消息列表错误:', error);
@@ -2828,6 +3060,1212 @@ initDatabase().then(async () => {
     } catch (error) {
       console.error('获取异常提醒失败:', error);
       sendResponse(res, null, '获取异常提醒失败', 500);
+    }
+  });
+
+  // ==================== 设备管理API ====================
+
+  // 设备分类管理
+  app.get('/api/v1/equipment/categories', authenticateToken, async (req, res) => {
+    try {
+      const [rows] = await pool.query('SELECT * FROM equ_category WHERE status = 1 ORDER BY sort_order');
+      sendResponse(res, rows);
+    } catch (error) {
+      console.error('获取设备分类错误:', error);
+      sendResponse(res, null, '获取设备分类失败', 500);
+    }
+  });
+
+  app.post('/api/v1/equipment/categories', authenticateToken, async (req, res) => {
+    const { code, name, description, sort_order } = req.body;
+    try {
+      const [result] = await pool.query(
+        'INSERT INTO equ_category (code, name, description, sort_order) VALUES (?, ?, ?, ?)',
+        [code, name, description, sort_order || 0]
+      );
+      sendResponse(res, { id: result.insertId });
+    } catch (error) {
+      console.error('创建设备分类错误:', error);
+      sendResponse(res, null, '创建设备分类失败', 500);
+    }
+  });
+
+  app.put('/api/v1/equipment/categories/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { code, name, description, sort_order, status } = req.body;
+    try {
+      await pool.query(
+        'UPDATE equ_category SET code = ?, name = ?, description = ?, sort_order = ?, status = ? WHERE id = ?',
+        [code, name, description, sort_order, status, id]
+      );
+      sendResponse(res);
+    } catch (error) {
+      console.error('更新设备分类错误:', error);
+      sendResponse(res, null, '更新设备分类失败', 500);
+    }
+  });
+
+  app.delete('/api/v1/equipment/categories/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query('DELETE FROM equ_category WHERE id = ?', [id]);
+      sendResponse(res);
+    } catch (error) {
+      console.error('删除设备分类错误:', error);
+      sendResponse(res, null, '删除设备分类失败', 500);
+    }
+  });
+
+  // 设备管理
+  app.get('/api/v1/equipment', authenticateToken, async (req, res) => {
+    try {
+      const { keyword, category_id, status, location, page = 1, pageSize = 20 } = req.query;
+      
+      let countSql = `
+        SELECT COUNT(*) as total
+        FROM equ_equipment e
+        WHERE 1=1
+      `;
+      let sql = `
+        SELECT e.*, 
+               c.name as category_name,
+               u.RealName as responsible_name
+        FROM equ_equipment e
+        LEFT JOIN equ_category c ON e.category_id = c.id
+        LEFT JOIN sys_user u ON e.responsible_user_id = u.UserID
+        WHERE 1=1
+      `;
+      const params = [];
+      const countParams = [];
+
+      if (keyword) {
+        sql += ' AND (e.name LIKE ? OR e.asset_code LIKE ?)';
+        countSql += ' AND (e.name LIKE ? OR e.asset_code LIKE ?)';
+        params.push(`%${keyword}%`, `%${keyword}%`);
+        countParams.push(`%${keyword}%`, `%${keyword}%`);
+      }
+      if (category_id) {
+        sql += ' AND e.category_id = ?';
+        countSql += ' AND e.category_id = ?';
+        params.push(category_id);
+        countParams.push(category_id);
+      }
+      if (status) {
+        sql += ' AND e.status = ?';
+        countSql += ' AND e.status = ?';
+        params.push(status);
+        countParams.push(status);
+      }
+      if (location) {
+        sql += ' AND e.location LIKE ?';
+        countSql += ' AND e.location LIKE ?';
+        params.push(`%${location}%`);
+        countParams.push(`%${location}%`);
+      }
+
+      const [countResult] = await pool.query(countSql, countParams);
+      const total = countResult[0]?.total || 0;
+
+      const offset = (page - 1) * pageSize;
+      sql += ` ORDER BY e.created_at DESC LIMIT ? OFFSET ?`;
+      params.push(parseInt(pageSize), offset);
+
+      const [rows] = await pool.query(sql, params);
+      sendResponse(res, { data: rows, total });
+    } catch (error) {
+      console.error('获取设备列表错误:', error);
+      sendResponse(res, null, '获取设备列表失败', 500);
+    }
+  });
+
+  app.post('/api/v1/equipment', authenticateToken, async (req, res) => {
+    try {
+      const {
+        asset_code, name, model, category_id, unit, purchase_date, brand, serial_number,
+        specification, price, funding_source, use_years, supplier, warranty_period,
+        location, responsible_user_id, status, department_id, is_important, tags, description,
+        attachments
+      } = req.body;
+
+      const [result] = await pool.query(
+        `INSERT INTO equ_equipment 
+        (asset_code, name, model, category_id, unit, purchase_date, brand, serial_number,
+         specification, price, funding_source, use_years, supplier, warranty_period,
+         location, responsible_user_id, status, department_id, is_important, tags, description)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          asset_code, 
+          name, 
+          model, 
+          category_id || null, 
+          unit, 
+          purchase_date, 
+          brand || null, 
+          serial_number || null,
+          specification || null, 
+          price || 0, 
+          funding_source || null, 
+          use_years || null, 
+          supplier || null, 
+          warranty_period || null,
+          location || null, 
+          responsible_user_id || null, 
+          status || 'available', 
+          department_id || null, 
+          is_important ? 1 : 0, 
+          tags || null, 
+          description || null
+        ]
+      );
+
+      await pool.query(
+        'INSERT INTO equ_operation_log (equipment_id, equipment_name, operation_type, operation_content, operator_id, operator_name, operator_ip) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [result.insertId, name, 'create', '新增设备', req.user.id, '管理员', req.ip || '127.0.0.1']
+      );
+
+      sendResponse(res, { id: result.insertId });
+    } catch (error) {
+      console.error('创建设备错误:', error);
+      sendResponse(res, null, '创建设备失败: ' + error.message, 500);
+    }
+  });
+
+  // 设备借还管理
+  app.get('/api/v1/equipment/borrow', authenticateToken, async (req, res) => {
+    try {
+      const { status, applicant_id, keyword, page = 1, pageSize = 20, equipment_id } = req.query;
+      
+      let countSql = `
+        SELECT COUNT(*) as total
+        FROM equ_borrow_record b
+        LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+        LEFT JOIN sys_user a ON b.applicant_id = a.UserID
+        WHERE 1=1
+      `;
+      let sql = `
+        SELECT b.*, 
+               e.name as equipment_name,
+               e.asset_code,
+               a.RealName as applicant_name
+        FROM equ_borrow_record b
+        LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+        LEFT JOIN sys_user a ON b.applicant_id = a.UserID
+        WHERE 1=1
+      `;
+      const params = [];
+      const countParams = [];
+
+      if (equipment_id) {
+        sql += ' AND b.equipment_id = ?';
+        countSql += ' AND b.equipment_id = ?';
+        const eqId = parseInt(equipment_id);
+        params.push(eqId);
+        countParams.push(eqId);
+      }
+      if (status) {
+        sql += ' AND b.status = ?';
+        countSql += ' AND b.status = ?';
+        params.push(status);
+        countParams.push(status);
+      }
+      if (applicant_id) {
+        sql += ' AND b.applicant_id = ?';
+        countSql += ' AND b.applicant_id = ?';
+        params.push(applicant_id);
+        countParams.push(applicant_id);
+      }
+      if (keyword) {
+        sql += ' AND (b.borrow_code LIKE ? OR e.name LIKE ?)';
+        countSql += ' AND (b.borrow_code LIKE ? OR e.name LIKE ?)';
+        params.push(`%${keyword}%`, `%${keyword}%`);
+        countParams.push(`%${keyword}%`, `%${keyword}%`);
+      }
+
+      const [countResult] = await pool.query(countSql, countParams);
+      const total = countResult[0]?.total || 0;
+
+      const offset = (page - 1) * pageSize;
+      sql += ` ORDER BY b.created_at DESC LIMIT ? OFFSET ?`;
+      params.push(parseInt(pageSize), offset);
+
+      const [rows] = await pool.query(sql, params);
+      sendResponse(res, { data: rows, total });
+    } catch (error) {
+      console.error('获取借还记录错误:', error);
+      sendResponse(res, null, '获取借还记录失败', 500);
+    }
+  });
+
+  app.get('/api/v1/equipment/borrow/logs', authenticateToken, async (req, res) => {
+    try {
+      const { start_date, end_date, page = 1, pageSize = 20 } = req.query;
+      
+      let sql = `
+        SELECT b.*, 
+               e.name as equipment_name,
+               e.asset_code,
+               a.RealName as applicant_name
+        FROM equ_borrow_record b
+        LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+        LEFT JOIN sys_user a ON b.applicant_id = a.UserID
+        WHERE 1=1
+      `;
+
+      if (start_date) {
+        sql += ` AND b.borrow_date >= '${start_date}'`;
+      }
+      if (end_date) {
+        sql += ` AND b.borrow_date <= '${end_date} 23:59:59'`;
+      }
+
+      sql += ` ORDER BY b.created_at DESC LIMIT ${parseInt(pageSize)} OFFSET ${(page - 1) * pageSize}`;
+
+      const [rowsResult] = await pool.query(sql, []);
+      
+      const countSql = `
+        SELECT COUNT(*) as total
+        FROM equ_borrow_record b
+        LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+        LEFT JOIN sys_user a ON b.applicant_id = a.UserID
+        WHERE 1=1
+      ` + (start_date ? ` AND b.borrow_date >= '${start_date}'` : '') + (end_date ? ` AND b.borrow_date <= '${end_date} 23:59:59'` : '');
+      
+      const [countResult] = await pool.query(countSql, []);
+      const total = countResult[0]?.total || 0;
+
+      res.json({ code: 200, message: '成功', data: { data: rowsResult, total } });
+    } catch (error) {
+      console.error('获取借还流水错误:', error);
+      sendResponse(res, null, '获取借还流水失败', 500);
+    }
+  });
+
+  app.get('/api/v1/equipment/borrow/logs/export', authenticateToken, async (req, res) => {
+    console.log('开始导出借还流水...');
+    try {
+      const { start_date, end_date } = req.query;
+      console.log('查询参数:', { start_date, end_date });
+      
+      let sql = `
+        SELECT b.borrow_code, 
+               e.name as equipment_name,
+               e.asset_code,
+               a.RealName as applicant_name,
+               b.borrow_date,
+               b.expect_return_date,
+               b.actual_return_date,
+               b.status,
+               b.use_place,
+               b.purpose,
+               b.receive_user_name,
+               b.receive_time,
+               b.return_user_name,
+               b.return_status,
+               b.return_condition
+        FROM equ_borrow_record b
+        LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+        LEFT JOIN sys_user a ON b.applicant_id = a.UserID
+        WHERE 1=1
+      `;
+      const params = [];
+
+      if (start_date) {
+        sql += ' AND b.borrow_date >= ?';
+        params.push(start_date);
+      }
+      if (end_date) {
+        sql += ' AND b.borrow_date <= ?';
+        params.push(end_date);
+      }
+
+      sql += ' ORDER BY b.created_at DESC';
+      console.log('SQL:', sql);
+      console.log('Params:', params);
+
+      const [rows] = await pool.query(sql, params);
+      console.log('查询结果数量:', rows.length);
+      
+      // 处理数据
+      const data = rows.map(row => ({
+        '申请编号': row.borrow_code || '',
+        '设备名称': row.equipment_name || '',
+        '资产编号': row.asset_code || '',
+        '借用人': row.applicant_name || '',
+        '借用日期': formatDate(row.borrow_date),
+        '预计归还日期': formatDate(row.expect_return_date),
+        '实际归还日期': formatDate(row.actual_return_date),
+        '状态': getStatusText(row.status),
+        '使用地点': row.use_place || '',
+        '用途': row.purpose || '',
+        '领取人': row.receive_user_name || '',
+        '领取时间': formatDate(row.receive_time),
+        '归还人': row.return_user_name || '',
+        '归还状态': getReturnStatusText(row.return_status),
+        '归还备注': row.return_condition || ''
+      }));
+
+      console.log('处理后数据:', JSON.stringify(data));
+
+      // 生成Excel
+      const XLSX = require('xlsx');
+      console.log('XLSX模块加载成功');
+      const ws = XLSX.utils.json_to_sheet(data);
+      console.log('工作表创建成功');
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '借还流水');
+
+      // 设置列宽
+      ws['!cols'] = [
+        { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 12 },
+        { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
+        { wch: 20 }, { wch: 30 }, { wch: 12 }, { wch: 20 },
+        { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 30 }
+      ];
+
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+      console.log('Excel生成成功，大小:', buffer.length);
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=equipment-borrow-logs.xlsx');
+      res.end(buffer);
+      console.log('导出完成');
+    } catch (error) {
+      console.error('导出借还流水错误:', error);
+      console.error('错误堆栈:', error.stack);
+      sendResponse(res, null, '导出失败: ' + error.message, 500);
+    }
+  });
+
+  app.get('/api/v1/equipment/overdue/export', authenticateToken, async (req, res) => {
+    try {
+      console.log('开始导出逾期清单...');
+
+      const sql = `
+        SELECT b.borrow_code, 
+               e.name as equipment_name,
+               e.asset_code,
+               a.RealName as applicant_name,
+               b.applicant_phone,
+               b.expect_return_date,
+               b.use_place,
+               b.borrow_date,
+               b.purpose
+        FROM equ_borrow_record b
+        LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+        LEFT JOIN sys_user a ON b.applicant_id = a.UserID
+        WHERE b.status = 'borrowed' AND b.expect_return_date < datetime('now')
+        ORDER BY b.expect_return_date ASC
+      `;
+
+      const [rows] = await pool.query(sql);
+      console.log('查询逾期记录数量:', rows.length);
+
+      const data = rows.map(row => {
+        const now = new Date();
+        const expectReturn = new Date(row.expect_return_date);
+        const overdueDays = Math.floor((now - expectReturn) / (1000 * 60 * 60 * 24));
+        
+        return {
+          '申请编号': row.borrow_code || '',
+          '设备名称': row.equipment_name || '',
+          '资产编号': row.asset_code || '',
+          '借用人': row.applicant_name || '',
+          '联系电话': row.applicant_phone || '',
+          '借用日期': formatDate(row.borrow_date),
+          '预计归还日期': formatDate(row.expect_return_date),
+          '逾期天数': `${overdueDays}天`,
+          '使用地点': row.use_place || '',
+          '用途': row.purpose || ''
+        };
+      });
+
+      console.log('处理后逾期数据:', JSON.stringify(data));
+
+      const XLSX = require('xlsx');
+      console.log('XLSX模块加载成功');
+      const ws = XLSX.utils.json_to_sheet(data);
+      console.log('工作表创建成功');
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '逾期清单');
+
+      ws['!cols'] = [
+        { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 12 },
+        { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
+        { wch: 20 }, { wch: 30 }
+      ];
+
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+      console.log('Excel生成成功，大小:', buffer.length);
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=equipment-overdue-list.xlsx');
+      res.end(buffer);
+      console.log('逾期清单导出完成');
+    } catch (error) {
+      console.error('导出逾期清单错误:', error);
+      console.error('错误堆栈:', error.stack);
+      sendResponse(res, null, '导出失败: ' + error.message, 500);
+    }
+  });
+
+  app.post('/api/v1/equipment/borrow', authenticateToken, async (req, res) => {
+    const { equipment_id, borrow_date, expect_return_date, use_place, purpose, quantity, 
+            applicant_name, applicant_phone, need_teacher_approval, teacher_name, status } = req.body;
+    try {
+      const [eqRows] = await pool.query('SELECT * FROM equ_equipment WHERE id = ?', [equipment_id]);
+      if (eqRows.length === 0) {
+        return sendResponse(res, null, '设备不存在', 404);
+      }
+
+      const equipment = eqRows[0];
+      const borrowCode = `BRW${Date.now().toString().slice(-8)}`;
+      const finalStatus = status || (need_teacher_approval ? 'pending_teacher' : 'pending_admin');
+
+      const [result] = await pool.query(
+        `INSERT INTO equ_borrow_record
+        (borrow_code, equipment_id, equipment_name, asset_code, applicant_id, applicant_name,
+         applicant_phone, borrow_date, expect_return_date, use_place, purpose, quantity, status,
+         is_supervised, supervisor_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [borrowCode, equipment_id, equipment.name, equipment.asset_code,
+         req.user.id, applicant_name || '用户', applicant_phone || '', borrow_date, expect_return_date, 
+         use_place, purpose, quantity || 1, finalStatus,
+         need_teacher_approval ? 1 : 0, teacher_name || '']
+      );
+
+      const applicantName = applicant_name || req.user.name || '用户';
+      
+      if (need_teacher_approval && teacher_name) {
+        await sendNotificationToRole('teacher', 'borrow_apply', '借还申请待审批', 
+          `【${equipment.name}】(${equipment.asset_code}) 借还申请已提交，请审批。借单号：${borrowCode}`, 'borrow', result.insertId);
+      } else {
+        await sendNotificationToRole('admin', 'borrow_apply', '借还申请待审批', 
+          `【${equipment.name}】(${equipment.asset_code}) 借还申请已提交，请审批。借单号：${borrowCode}`, 'borrow', result.insertId);
+      }
+      
+      await sendNotification(req.user.id, applicantName, 'borrow_apply', '借还申请已提交', 
+        `您的【${equipment.name}】(${equipment.asset_code}) 借还申请已提交，等待审批。借单号：${borrowCode}`, 'borrow', result.insertId);
+
+      sendResponse(res, { id: result.insertId, borrow_code: borrowCode });
+    } catch (error) {
+      console.error('申请借用错误:', error);
+      sendResponse(res, null, '申请借用失败', 500);
+    }
+  });
+
+  app.put('/api/v1/equipment/borrow/:id/approve', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { approval_status, approval_comment, is_supervised, supervisor_id, new_borrow_date, new_return_date } = req.body;
+    try {
+      const [rows] = await pool.query('SELECT * FROM equ_borrow_record WHERE id = ?', [id]);
+      if (rows.length === 0) {
+        return sendResponse(res, null, '记录不存在', 404);
+      }
+
+      const record = rows[0];
+      let newStatus = approval_status;
+
+      // 如果是导师审批通过，并且需要管理员审批，则状态改为待管理员审批
+      if (is_supervised && approval_status === 'approved' && record.status === 'pending_teacher') {
+        newStatus = 'pending_admin';
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+      const updateFields = [];
+      const updateValues = [];
+
+      updateFields.push('status = ?');
+      updateValues.push(newStatus);
+
+      updateFields.push('approval_comment = ?');
+      updateValues.push(approval_comment);
+
+      updateFields.push('approval_time = ?');
+      updateValues.push(dateStr);
+
+      updateFields.push('approval_user_id = ?');
+      updateValues.push(req.user.id);
+
+      updateFields.push('approval_user_name = ?');
+      updateValues.push(is_supervised ? '导师' : '管理员');
+
+      // 如果提供了新的时间，则更新
+      if (new_borrow_date) {
+        updateFields.push('borrow_date = ?');
+        updateValues.push(new_borrow_date);
+      }
+      if (new_return_date) {
+        updateFields.push('expect_return_date = ?');
+        updateValues.push(new_return_date);
+      }
+
+      updateValues.push(id);
+
+      await pool.query(`UPDATE equ_borrow_record SET ${updateFields.join(', ')} WHERE id = ?`, updateValues);
+
+      // 如果是最终审批通过，更新设备状态为已预约（待领取）
+      if (newStatus === 'approved') {
+        await pool.query('UPDATE equ_equipment SET status = ? WHERE id = ?', ['reserved', record.equipment_id]);
+        
+        await sendNotification(record.applicant_id, record.applicant_name, 'borrow_approved', '借还申请已通过', 
+          `您的【${record.equipment_name}】(${record.asset_code}) 借还申请已通过审批，请前往领取。借单号：${record.borrow_code}`, 'borrow', id);
+      } else if (approval_status === 'rejected') {
+        await sendNotification(record.applicant_id, record.applicant_name, 'borrow_rejected', '借还申请已拒绝', 
+          `您的【${record.equipment_name}】(${record.asset_code}) 借还申请未通过审批，原因：${approval_comment || '无'}。借单号：${record.borrow_code}`, 'borrow', id);
+      } else if (newStatus === 'pending_admin') {
+        await sendNotificationToRole('admin', 'borrow_apply', '借还申请待管理员审批', 
+          `【${record.equipment_name}】(${record.asset_code}) 借还申请已通过导师审批，等待管理员审批。借单号：${record.borrow_code}`, 'borrow', id);
+      }
+
+      sendResponse(res);
+    } catch (error) {
+      console.error('审批错误:', error);
+      sendResponse(res, null, '审批失败', 500);
+    }
+  });
+
+  app.put('/api/v1/equipment/borrow/:id/receive', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { receive_user_name, check_status, receive_remark } = req.body;
+    try {
+      const [rows] = await pool.query('SELECT * FROM equ_borrow_record WHERE id = ?', [id]);
+      if (rows.length === 0) {
+        return sendResponse(res, null, '记录不存在', 404);
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+      await pool.query(
+        `UPDATE equ_borrow_record SET
+        status = 'borrowed', receive_user_id = ?, receive_user_name = ?, receive_time = ?, remark = ?
+        WHERE id = ?`,
+        [req.user.id, receive_user_name || '管理员', dateStr, receive_remark || '', id]
+      );
+
+      await pool.query('UPDATE equ_equipment SET status = ? WHERE id = ?', ['borrowed', rows[0].equipment_id]);
+      
+      await sendNotification(rows[0].applicant_id, rows[0].applicant_name, 'borrow_receive', '设备已领取', 
+        `您借用的【${rows[0].equipment_name}】(${rows[0].asset_code}) 已成功领取，请按时归还。借单号：${rows[0].borrow_code}`, 'borrow', id);
+
+      sendResponse(res);
+    } catch (error) {
+      console.error('领取确认错误:', error);
+      sendResponse(res, null, '领取确认失败', 500);
+    }
+  });
+
+  app.put('/api/v1/equipment/borrow/:id/return', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { return_condition, return_status, return_user_name, accept_user_name } = req.body;
+    try {
+      const [rows] = await pool.query('SELECT * FROM equ_borrow_record WHERE id = ?', [id]);
+      if (rows.length === 0) {
+        return sendResponse(res, null, '记录不存在', 404);
+      }
+
+      // 确定最终状态
+      let finalStatus = 'returned';
+      if (return_status === 'damaged') {
+        finalStatus = 'damaged';
+      } else if (return_status === 'missing_parts') {
+        finalStatus = 'missing_parts';
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+      await pool.query(`UPDATE equ_borrow_record SET
+        status = ?, actual_return_date = ?, return_user_id = ?, return_user_name = ?, 
+        return_condition = ?, return_status = ?
+        WHERE id = ?`,
+        [finalStatus, dateStr, req.user.id, return_user_name || '管理员', 
+         return_condition || '', return_status || 'returned', id]
+      );
+
+      // 根据归还状态更新设备状态
+      let newStatus = 'available';
+      if (return_status === 'damaged') {
+        newStatus = 'maintenance';
+      } else if (return_status === 'missing_parts') {
+        newStatus = 'maintenance';
+      }
+
+      await pool.query('UPDATE equ_equipment SET status = ? WHERE id = ?', [newStatus, rows[0].equipment_id]);
+      
+      if (finalStatus === 'returned') {
+        await sendNotification(rows[0].applicant_id, rows[0].applicant_name, 'borrow_return', '设备已归还', 
+          `您借用的【${rows[0].equipment_name}】(${rows[0].asset_code}) 已成功归还。借单号：${rows[0].borrow_code}`, 'borrow', id);
+      } else if (return_status === 'damaged' || return_status === 'missing_parts') {
+        await sendNotification(rows[0].applicant_id, rows[0].applicant_name, 'borrow_damaged', '设备归还异常', 
+          `您借用的【${rows[0].equipment_name}】(${rows[0].asset_code}) 归还时发现${return_status === 'damaged' ? '损坏' : '部件缺失'}，请配合处理。借单号：${rows[0].borrow_code}`, 'borrow', id);
+        await sendNotificationToRole('admin', 'borrow_damaged', '设备归还异常', 
+          `【${rows[0].equipment_name}】(${rows[0].asset_code}) 归还时发现${return_status === 'damaged' ? '损坏' : '部件缺失'}，请处理。借单号：${rows[0].borrow_code}`, 'borrow', id);
+      }
+
+      sendResponse(res);
+    } catch (error) {
+      console.error('归还验收错误:', error);
+      sendResponse(res, null, '归还验收失败', 500);
+    }
+  });
+
+  // 设备统计
+  app.get('/api/v1/equipment/statistics', authenticateToken, async (req, res) => {
+    try {
+      const [statusCountRes] = await pool.query(`
+        SELECT status, COUNT(*) as count
+        FROM equ_equipment
+        GROUP BY status
+      `);
+
+      const [categoryListRes] = await pool.query(`
+        SELECT id, name FROM equ_category WHERE status = 1 ORDER BY sort_order
+      `);
+
+      const [categoryCountRes] = await pool.query(`
+        SELECT c.name, COUNT(e.id) as count, COALESCE(SUM(e.price), 0) as total_value
+        FROM equ_category c
+        LEFT JOIN equ_equipment e ON c.id = e.category_id
+        GROUP BY c.id
+      `);
+
+      const [valueRes] = await pool.query(`
+        SELECT SUM(price) as total_value
+        FROM equ_equipment
+      `);
+
+      const [borrowCountRes] = await pool.query(`
+        SELECT COUNT(*) as borrowed_count
+        FROM equ_borrow_record
+        WHERE status = 'borrowed'
+      `);
+
+      const [overdueRes] = await pool.query(`
+        SELECT COUNT(*) as overdue_count
+        FROM equ_borrow_record
+        WHERE status = 'borrowed' AND expect_return_date < datetime('now')
+      `);
+
+      let repairCount = 0;
+      try {
+        const [repairRes] = await pool.query(`
+          SELECT COUNT(*) as repair_count
+          FROM equ_repair_record
+          WHERE status = 'pending'
+        `);
+        repairCount = repairRes[0]?.repair_count || 0;
+      } catch (e) {
+        console.warn('维修记录表不存在，跳过维修统计');
+      }
+
+      const [overdueListRes] = await pool.query(`
+        SELECT b.*, e.name as equipment_name, e.asset_code
+        FROM equ_borrow_record b
+        LEFT JOIN equ_equipment e ON b.equipment_id = e.id
+        WHERE b.status = 'borrowed' AND b.expect_return_date < datetime('now')
+        ORDER BY b.expect_return_date ASC
+        LIMIT 20
+      `);
+
+      const totalCount = statusCountRes.reduce((sum, item) => sum + item.count, 0);
+      const statusStats = {};
+      statusCountRes.forEach(item => {
+        statusStats[item.status] = item.count;
+      });
+
+      // 定义所有状态的映射
+      const statusInfoMap = {
+        'available': { label: '在库-可用', description: '可借出', operations: '借出' },
+        'maintenance': { label: '在库-待维修', description: '故障待修', operations: '送修、报废' },
+        'pending_repair': { label: '在库-待维修', description: '故障待修', operations: '送修、报废' },
+        'reserved': { label: '在库-已预约', description: '已审批未领取', operations: '-' },
+        'borrowed': { label: '借出', description: '已借出', operations: '归还' },
+        'repairing': { label: '送修', description: '外送维修', operations: '入库' },
+        'scrapped': { label: '报废', description: '已下账', operations: '无' },
+        'lost': { label: '丢失', description: '未找到', operations: '找回后更新' }
+      };
+
+      // 构建完整的状态分布，包含所有状态（即使数量为0）
+      const allStatuses = ['available', 'maintenance', 'reserved', 'borrowed', 'repairing', 'scrapped', 'lost'];
+      const statusDistribution = allStatuses.map(statusKey => {
+        const statusInfo = statusInfoMap[statusKey] || { label: statusKey, description: '-', operations: '-' };
+        
+        // 处理状态映射：维护状态可能是 maintenance 或 pending_repair
+        let count = statusStats[statusKey] || 0;
+        if (statusKey === 'maintenance' && !statusStats['maintenance'] && statusStats['pending_repair']) {
+          count = statusStats['pending_repair'];
+        }
+        
+        return {
+          status: statusKey,
+          label: statusInfo.label,
+          description: statusInfo.description,
+          operations: statusInfo.operations,
+          count: count,
+          percentage: totalCount > 0 ? Math.round(count / totalCount * 100) : 0
+        };
+      });
+
+      const totalValue = valueRes[0]?.total_value || 0;
+      const utilizationRate = totalCount > 0 ? Math.round((statusStats['borrowed'] || 0) / totalCount * 100) : 0;
+
+      const categoryCountMap = {};
+      categoryCountRes.forEach(item => {
+        categoryCountMap[item.name] = { count: item.count, total_value: item.total_value || 0 };
+      });
+
+      const categoryStatistics = categoryListRes.map(category => {
+        const stats = categoryCountMap[category.name] || { count: 0, total_value: 0 };
+        return {
+          name: category.name,
+          count: stats.count,
+          total_value: stats.total_value,
+          percentage: totalCount > 0 ? Math.round(stats.count / totalCount * 100) : 0
+        };
+      });
+
+      sendResponse(res, {
+        total_count: totalCount,
+        available_count: statusStats['available'] || 0,
+        borrowed_count: borrowCountRes[0]?.borrowed_count || 0,
+        maintenance_count: statusStats['pending_repair'] || statusStats['maintenance'] || 0,
+        total_value: totalValue,
+        utilization_rate: utilizationRate,
+        overdue_count: overdueRes[0]?.overdue_count || 0,
+        repair_count: repairCount,
+        status_distribution: statusDistribution,
+        category_statistics: categoryStatistics,
+        overdue_list: overdueListRes.map(item => ({
+          ...item,
+          overdue_days: Math.ceil((new Date() - new Date(item.expect_return_date)) / (1000 * 60 * 60 * 24))
+        }))
+      });
+    } catch (error) {
+      console.error('获取设备统计错误:', error);
+      sendResponse(res, null, '获取设备统计失败', 500);
+    }
+  });
+
+  app.get('/api/v1/equipment/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const [rows] = await pool.query(`
+        SELECT e.*, 
+               c.name as category_name,
+               u.RealName as responsible_name
+        FROM equ_equipment e
+        LEFT JOIN equ_category c ON e.category_id = c.id
+        LEFT JOIN sys_user u ON e.responsible_user_id = u.UserID
+        WHERE e.id = ?
+      `, [id]);
+      if (rows.length === 0) {
+        return sendResponse(res, null, '设备不存在', 404);
+      }
+      sendResponse(res, rows[0]);
+    } catch (error) {
+      console.error('获取设备信息错误:', error);
+      sendResponse(res, null, '获取设备信息失败', 500);
+    }
+  });
+
+  app.put('/api/v1/equipment/:id/status', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { status, reason } = req.body;
+    try {
+      const [rows] = await pool.query('SELECT * FROM equ_equipment WHERE id = ?', [id]);
+      if (rows.length === 0) {
+        return sendResponse(res, null, '设备不存在', 404);
+      }
+
+      const oldStatus = rows[0].status;
+      await pool.query('UPDATE equ_equipment SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, id]);
+
+      await pool.query(
+        'INSERT INTO equ_operation_log (equipment_id, equipment_name, operation_type, operation_content, operator_id, operator_name, operator_ip) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, rows[0].name, 'status_change', `状态变更: ${oldStatus} -> ${status}, 原因: ${reason || '无'}`, req.user.id, '管理员', req.ip || '127.0.0.1']
+      );
+
+      sendResponse(res, { id });
+    } catch (error) {
+      console.error('更新设备状态错误:', error);
+      sendResponse(res, null, '更新设备状态失败', 500);
+    }
+  });
+
+  app.put('/api/v1/equipment/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const {
+      asset_code, name, model, category_id, unit, purchase_date, brand, serial_number,
+      specification, price, funding_source, use_years, supplier, warranty_period,
+      location, responsible_user_id, status, department_id, is_important, tags, description
+    } = req.body;
+    try {
+      await pool.query(
+        `UPDATE equ_equipment SET
+        asset_code = ?, name = ?, model = ?, category_id = ?, unit = ?, purchase_date = ?, brand = ?, serial_number = ?,
+        specification = ?, price = ?, funding_source = ?, use_years = ?, supplier = ?, warranty_period = ?,
+        location = ?, responsible_user_id = ?, status = ?, department_id = ?, is_important = ?, tags = ?, description = ?
+        WHERE id = ?`,
+        [asset_code, name, model, category_id, unit, purchase_date, brand, serial_number,
+         specification, price, funding_source, use_years, supplier, warranty_period,
+         location, responsible_user_id, status, department_id, is_important, tags, description, id]
+      );
+
+      await pool.query(
+        'INSERT INTO equ_operation_log (equipment_id, equipment_name, operation_type, operation_content, operator_id, operator_name, operator_ip) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, name, 'update', '更新设备信息', req.user.id, '管理员', req.ip || '127.0.0.1']
+      );
+
+      sendResponse(res);
+    } catch (error) {
+      console.error('更新设备错误:', error);
+      sendResponse(res, null, '更新设备失败', 500);
+    }
+  });
+
+  app.delete('/api/v1/equipment/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const [eqRows] = await pool.query('SELECT * FROM equ_equipment WHERE id = ?', [id]);
+      if (eqRows.length > 0) {
+        await pool.query(
+          'INSERT INTO equ_operation_log (equipment_id, equipment_name, operation_type, operation_content, operator_id, operator_name, operator_ip) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [id, eqRows[0].name, 'delete', '删除设备', req.user.id, '管理员', req.ip || '127.0.0.1']
+        );
+      }
+      await pool.query('DELETE FROM equ_equipment WHERE id = ?', [id]);
+      sendResponse(res);
+    } catch (error) {
+      console.error('删除设备错误:', error);
+      sendResponse(res, null, '删除设备失败', 500);
+    }
+  });
+
+  // 设备维修管理
+  app.get('/api/v1/equipment/repair', authenticateToken, async (req, res) => {
+    try {
+      const { status, equipment_id } = req.query;
+      let sql = `
+        SELECT r.*, 
+               e.name as equipment_name,
+               e.asset_code
+        FROM equ_repair_record r
+        LEFT JOIN equ_equipment e ON r.equipment_id = e.id
+        WHERE 1=1
+      `;
+      const params = [];
+
+      if (status) {
+        sql += ' AND r.repair_status = ?';
+        params.push(status);
+      }
+      if (equipment_id) {
+        sql += ' AND r.equipment_id = ?';
+        params.push(equipment_id);
+      }
+
+      sql += ' ORDER BY r.created_at DESC';
+
+      const [rows] = await pool.query(sql, params);
+      sendResponse(res, rows);
+    } catch (error) {
+      console.error('获取维修记录错误:', error);
+      sendResponse(res, null, '获取维修记录失败', 500);
+    }
+  });
+
+  app.post('/api/v1/equipment/repair', authenticateToken, async (req, res) => {
+    const { equipment_id, fault_description, repair_type } = req.body;
+    try {
+      const [eqRows] = await pool.query('SELECT * FROM equ_equipment WHERE id = ?', [equipment_id]);
+      if (eqRows.length === 0) {
+        return sendResponse(res, null, '设备不存在', 404);
+      }
+
+      const [result] = await pool.query(
+        `INSERT INTO equ_repair_record
+        (equipment_id, equipment_name, asset_code, fault_description, report_user_id, report_user_name, report_time, repair_type, repair_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [equipment_id, eqRows[0].name, eqRows[0].asset_code, fault_description, req.user.id, '管理员', new Date().toISOString(), repair_type, 'pending']
+      );
+
+      await pool.query('UPDATE equ_equipment SET status = ? WHERE id = ?', ['maintenance', equipment_id]);
+
+      sendResponse(res, { id: result.insertId });
+    } catch (error) {
+      console.error('报修错误:', error);
+      sendResponse(res, null, '报修失败', 500);
+    }
+  });
+
+  app.put('/api/v1/equipment/repair/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { repair_content, repair_user_id, repair_user_name, repair_start_time, repair_end_time, repair_cost, repair_status } = req.body;
+    try {
+      await pool.query(
+        `UPDATE equ_repair_record SET
+        repair_content = ?, repair_user_id = ?, repair_user_name = ?, repair_start_time = ?, repair_end_time = ?, repair_cost = ?, repair_status = ?
+        WHERE id = ?`,
+        [repair_content, repair_user_id, repair_user_name, repair_start_time, repair_end_time, repair_cost, repair_status, id]
+      );
+
+      const [rows] = await pool.query('SELECT * FROM equ_repair_record WHERE id = ?', [id]);
+      if (rows.length > 0 && repair_status === 'completed') {
+        await pool.query('UPDATE equ_equipment SET status = ? WHERE id = ?', ['available', rows[0].equipment_id]);
+      }
+
+      sendResponse(res);
+    } catch (error) {
+      console.error('更新维修记录错误:', error);
+      sendResponse(res, null, '更新维修记录失败', 500);
+    }
+  });
+
+  app.get('/api/v1/equipment/statistics/overview', authenticateToken, async (req, res) => {
+    try {
+      const [statusCountRes] = await pool.query(`
+        SELECT status, COUNT(*) as count
+        FROM equ_equipment
+        GROUP BY status
+      `);
+
+      const [categoryCountRes] = await pool.query(`
+        SELECT c.name, COUNT(*) as count
+        FROM equ_equipment e
+        LEFT JOIN equ_category c ON e.category_id = c.id
+        GROUP BY c.id
+      `);
+
+      const [valueRes] = await pool.query(`
+        SELECT SUM(price) as total_value
+        FROM equ_equipment
+      `);
+
+      const [borrowCountRes] = await pool.query(`
+        SELECT COUNT(*) as borrowed_count
+        FROM equ_borrow_record
+        WHERE status = 'borrowed'
+      `);
+
+      const statusStats = {};
+      statusCountRes.forEach(item => {
+        statusStats[item.status] = item.count;
+      });
+
+      sendResponse(res, {
+        total: statusCountRes.reduce((sum, item) => sum + item.count, 0),
+        status_stats: statusStats,
+        category_stats: categoryCountRes,
+        total_value: valueRes[0].total_value || 0,
+        borrowed_count: borrowCountRes[0].borrowed_count || 0
+      });
+    } catch (error) {
+      console.error('获取设备统计错误:', error);
+      sendResponse(res, null, '获取设备统计失败', 500);
+    }
+  });
+
+  // 下载Excel导入模板
+  app.get('/api/v1/equipment/import/template', authenticateToken, async (req, res) => {
+    try {
+      // 获取分类列表
+      const categories = await getCategoryList();
+      
+      const templateData = [
+        ['资产编号', '设备名称', '型号', '设备分类', '计量单位', '购入日期', '品牌', '序列号', '规格', '价格', '经费来源', '使用年限', '供应商', '保修期', '存放位置', '责任人', '所属部门', '是否重要设备', '标签', '备注'],
+        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        ['必填', '必填', '选填', '必填', '必填', '必填', '选填', '选填', '选填', '选填', '选填', '选填', '选填', '选填', '选填', '选填', '选填', '选填', '选填', '选填'],
+        ['EQU011', '示例设备1', 'Model-X', '电子设备', '台', '2024-01-15', '品牌A', 'SN001', '规格描述', '1000.00', '教学经费', '5', '供应商A', '3年', '实验楼A-A101', '管理员', '计算机学院', '否', '标签1,标签2', '备注信息'],
+        ['EQU012', '示例设备2', 'Model-Y', '机械设备', '件', '2024-02-20', '品牌B', 'SN002', '规格描述', '2000.00', '科研经费', '8', '供应商B', '2年', '实验楼B-B201', '张老师', '物理系', '是', '重要设备', '备注信息'],
+        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        ['设备分类可选值:', categories.map(c => c.name).join(', ')]
+      ];
+
+      // 创建工作簿
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(templateData);
+      
+      // 设置列宽
+      ws['!cols'] = [
+        { wch: 12 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 8 },
+        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 20 }, { wch: 10 },
+        { wch: 12 }, { wch: 10 }, { wch: 15 }, { wch: 10 }, { wch: 18 },
+        { wch: 12 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 20 }
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, '设备导入');
+
+      // 生成Excel文件
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=设备导入模板.xlsx');
+      res.end(buffer);
+    } catch (error) {
+      console.error('下载模板失败:', error);
+      sendResponse(res, null, '下载模板失败: ' + error.message, 500);
+    }
+  });
+
+  // 批量导入设备
+  app.post('/api/v1/equipment/import', authenticateToken, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return sendResponse(res, null, '请上传文件', 400);
+      }
+
+      // 读取Excel文件
+      const filePath = req.file.path;
+      const workbook = XLSX.readFile(filePath);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // 删除临时文件
+      fs.unlinkSync(filePath);
+
+      console.log('Excel数据解析结果:', JSON.stringify(data));
+      
+      // 解析数据（跳过前3行：表头、空行、提示行）
+      const rawData = data.slice(3).filter(row => {
+        if (!row || row.length === 0) return false;
+        // 过滤掉分类可选值提示行
+        const firstCell = row[0]?.toString().trim() || '';
+        if (firstCell.startsWith('设备分类可选值:')) return false;
+        // 至少有资产编号或设备名称
+        return row[0] || row[1];
+      });
+      
+      console.log('过滤后的数据:', JSON.stringify(rawData));
+      
+      if (rawData.length === 0) {
+        return sendResponse(res, null, 'Excel文件中没有有效的数据，请确保在第4行开始填写设备数据', 400);
+      }
+
+      // 获取分类、用户、部门列表
+      const categories = await getCategoryList();
+      const users = await getUserList();
+      const departments = await getDepartmentList();
+
+      let successCount = 0;
+      let failedCount = 0;
+      let errors = [];
+      const assetCodes = [];
+
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        const rowIndex = i + 4;
+
+        try {
+          // 提取字段
+          const asset_code = row[0]?.toString().trim() || '';
+          const name = row[1]?.toString().trim() || '';
+          const model = row[2]?.toString().trim() || '';
+          const categoryName = row[3]?.toString().trim() || '';
+          const unit = row[4]?.toString().trim() || '';
+          const purchase_date = row[5]?.toString().trim() || '';
+          const brand = row[6]?.toString().trim() || '';
+          const serial_number = row[7]?.toString().trim() || '';
+          const specification = row[8]?.toString().trim() || '';
+          const price = parseFloat(row[9]) || 0;
+          const funding_source = row[10]?.toString().trim() || '';
+          const use_years = parseInt(row[11]) || 0;
+          const supplier = row[12]?.toString().trim() || '';
+          const warranty_period = row[13]?.toString().trim() || '';
+          const location = row[14]?.toString().trim() || '';
+          const responsible_name = row[15]?.toString().trim() || '';
+          const department_name = row[16]?.toString().trim() || '';
+          const is_important = (row[17]?.toString().trim() || '否') === '是' ? 1 : 0;
+          const tags = row[18]?.toString().trim() || '';
+          const description = row[19]?.toString().trim() || '';
+
+          // 验证必填字段
+          if (!asset_code || !name || !categoryName || !unit || !purchase_date) {
+            failedCount++;
+            errors.push(`第${rowIndex}行：必填字段缺失`);
+            continue;
+          }
+
+          // 检查资产编号唯一性（在导入数据中）
+          if (assetCodes.includes(asset_code)) {
+            failedCount++;
+            errors.push(`第${rowIndex}行：资产编号 ${asset_code} 在导入文件中重复`);
+            continue;
+          }
+          assetCodes.push(asset_code);
+
+          // 检查资产编号唯一性（在数据库中）
+          const existingEquipment = await getEquipmentByAssetCode(asset_code);
+          if (existingEquipment) {
+            failedCount++;
+            errors.push(`第${rowIndex}行：资产编号 ${asset_code} 已存在`);
+            continue;
+          }
+
+          // 查找分类ID
+          const category = categories.find(c => c.name === categoryName);
+          if (!category) {
+            failedCount++;
+            errors.push(`第${rowIndex}行：分类 ${categoryName} 不存在`);
+            continue;
+          }
+
+          // 查找责任人ID
+          let responsible_user_id = null;
+          if (responsible_name) {
+            const user = users.find(u => u.RealName === responsible_name);
+            responsible_user_id = user?.UserID || null;
+          }
+
+          // 查找部门ID
+          let department_id = null;
+          if (department_name) {
+            const dept = departments.find(d => d.DeptName === department_name);
+            department_id = dept?.DeptID || null;
+          }
+
+          // 创建设备
+          await pool.query(`
+            INSERT INTO equ_equipment (
+              asset_code, name, model, category_id, unit, purchase_date,
+              brand, serial_number, specification, price, funding_source,
+              use_years, supplier, warranty_period, location,
+              responsible_user_id, department_id, is_important,
+              tags, description, status, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available', datetime('now'), datetime('now'))
+          `, [
+            asset_code, name, model, category.id, unit, purchase_date,
+            brand, serial_number, specification, price, funding_source,
+            use_years, supplier, warranty_period, location,
+            responsible_user_id, department_id, is_important,
+            tags, description
+          ]);
+
+          successCount++;
+        } catch (error) {
+          console.error(`第${rowIndex}行导入失败:`, error);
+          failedCount++;
+          errors.push(`第${rowIndex}行：${error.message}`);
+        }
+      }
+
+      sendResponse(res, {
+        success: successCount,
+        failed: failedCount,
+        errors: errors
+      }, '导入完成');
+    } catch (error) {
+      console.error('批量导入失败:', error);
+      // 清理临时文件
+      if (req.file && req.file.path) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (e) {}
+      }
+      sendResponse(res, null, '导入失败: ' + error.message, 500);
     }
   });
 

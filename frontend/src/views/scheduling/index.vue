@@ -459,8 +459,8 @@ function handleSortChange({ prop, order }: { prop: string; order: string }) {
 function getScheduleItems(timeSlot: string, weekDay: number) {
   return scheduleList.value.filter(item => {
     if (item.time_slot_start !== timeSlot) return false
-    if (item.week_day !== weekDay) return false
-    if (searchForm.weekNo && item.week_no !== searchForm.weekNo) return false
+    if (parseInt(item.week_day) !== weekDay) return false
+    if (searchForm.weekNo && parseInt(item.week_no) !== parseInt(searchForm.weekNo)) return false
     return true
   })
 }

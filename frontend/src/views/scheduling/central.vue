@@ -20,12 +20,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="教师">
-          <el-select v-model="searchForm.teacherId" placeholder="请选择教师" clearable @change="handleSearch" style="width: 150px;">
+          <el-select v-model="searchForm.teacherName" placeholder="请选择教师" clearable @change="handleSearch" style="width: 150px;">
             <el-option
               v-for="teacher in teacherList"
               :key="teacher.id"
               :label="teacher.name"
-              :value="teacher.id"
+              :value="teacher.name"
             />
           </el-select>
         </el-form-item>
@@ -250,7 +250,7 @@ import { get, post, put, del } from '@/utils/request'
 
 const searchForm = reactive({
   semesterId: 1,
-  teacherId: null as number | null,
+  teacherName: '',
   courseName: ''
 })
 
@@ -430,6 +430,14 @@ async function loadSchedules() {
     const params: any = {
       semesterId: searchForm.semesterId,
       sourceType: 'CentralScheduling'
+    }
+    
+    if (searchForm.teacherName) {
+      params.teacherName = searchForm.teacherName
+    }
+    
+    if (searchForm.courseName) {
+      params.courseName = searchForm.courseName
     }
     
     const res = await get<any[]>('/scheduling', params)

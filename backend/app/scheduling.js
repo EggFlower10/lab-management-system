@@ -4,7 +4,7 @@ module.exports = function (app, pool, authenticateToken, sendResponse) {
   // 获取排课列表
   app.get('/api/v1/scheduling', authenticateToken, async (req, res) => {
     try {
-      const { semesterId, weekNo, weekNoStart, weekNoEnd, buildingId, roomId, majorId, classId, teacherId, courseName, sourceType } = req.query;
+      const { semesterId, weekNo, weekNoStart, weekNoEnd, buildingId, roomId, majorId, classId, teacherName, courseName, sourceType } = req.query;
 
       let sql = `
         SELECT 
@@ -85,9 +85,9 @@ module.exports = function (app, pool, authenticateToken, sendResponse) {
         params.push(classId);
       }
 
-      if (teacherId) {
-        sql += ' AND s.teacher_id = ?';
-        params.push(teacherId);
+      if (teacherName) {
+        sql += ' AND s.teacher_name LIKE ?';
+        params.push(`%${teacherName}%`);
       }
 
       if (courseName) {

@@ -340,7 +340,7 @@ CREATE TABLE IF NOT EXISTS Ven_Building (
   BuildingCode VARCHAR(50) NOT NULL,
   BuildingName VARCHAR(100) NOT NULL,
   BuildingNameEn VARCHAR(100),
-  CampusID INTEGER NOT NULL,
+  CampusID INTEGER DEFAULT 1,
   Address VARCHAR(255),
   TotalFloors INTEGER,
   Area REAL,
@@ -1014,7 +1014,7 @@ INSERT INTO lab_scheduling (scheduling_code, semester_id, source_type, course_na
 ('SCH002', 1, 'CentralScheduling', '数据结构与算法', '计算机科学与技术', '计算机2023-1班', 45, '实验楼A', 'A101实验室', 'A101', '李老师', 1, 1, '3-4', 1, 'approved'),
 ('SCH003', 1, 'CentralScheduling', '操作系统', '计算机科学与技术', '计算机2023-2班', 40, '实验楼A', 'A102实验室', 'A102', '王老师', 1, 2, '5-6', 1, 'approved'),
 ('SCH004', 1, 'CentralScheduling', '计算机网络', '软件工程', '软件工程2023-1班', 42, '实验楼B', 'B201实验室', 'B201', '李老师', 2, 3, '1-2', 1, 'approved'),
-('SCH005', 1, 'Reservation', '智能算法研究', NULL, NULL, 10, '实验楼B', 'B101实验室', 'B101', '张老师', 2, 2, '5-6', 1, 'approved'),
+('SCH005', 1, 'CentralScheduling', '数据库原理', '计算机科学与技术', '计算机2023-2班', 45, '实验楼B', 'B101实验室', 'B101', '王老师', 2, 2, '5-6', 1, 'approved'),
 ('SCH006', 1, 'CentralScheduling', '数据库原理', '计算机科学与技术', '计算机2023-1班', 45, '实验楼A', 'A101实验室', 'A101', '王老师', 3, 1, '1-2', 1, 'approved'),
 ('SCH007', 1, 'CentralScheduling', '数据库原理', '计算机科学与技术', '计算机2023-1班', 45, '实验楼A', 'A101实验室', 'A101', '王老师', 3, 1, '3-4', 1, 'approved'),
 ('SCH008', 1, 'CentralScheduling', '软件工程', '软件工程', '软件工程2023-2班', 40, '实验楼B', 'B101实验室', 'B101', '张老师', 4, 2, '5-6', 1, 'approved'),
@@ -1028,6 +1028,11 @@ INSERT INTO lab_reservation (reservation_code, semester_id, building_id, buildin
 ('RES001', 1, 2, '实验楼A', 3, 'A101实验室', 'A101', '2025-09-17', 3, 3, '5-6', '智能算法研究', '学生科研项目', 1, '管理员', '13800138000', '张三', '13800138001', 10, 'approved'),
 ('RES002', 1, 3, '实验楼B', 8, 'B201实验室', 'B201', '2025-09-20', 4, 6, '7-8', '毕业设计实验', '毕业设计论文', 3, '李老师', '13800138002', '李老师', '13800138002', 5, 'pending');
 
+-- 预约对应的排课记录
+INSERT INTO lab_scheduling (scheduling_code, semester_id, source_type, source_id, course_name, class_name, teacher_name, building_id, building_name, room_id, room_name, room_number, week_no, week_day, time_slot_start, time_slot_end, student_count, status) VALUES
+('RV001', 1, 'Reservation', 1, '智能算法研究', '-', '张三', 2, '实验楼A', 3, 'A101实验室', 'A101', 3, 3, '5-6', '5-6', 10, 1),
+('RV002', 1, 'Reservation', 2, '毕业设计实验', '-', '李老师', 3, '实验楼B', 8, 'B201实验室', 'B201', 4, 6, '7-8', '7-8', 5, 1);
+
 -- 授课申请数据
 INSERT INTO lab_teaching_request (request_code, semester_id, course_name, major_name, grade, class_name, week_no, week_day, time_slot, applicant_id, applicant_name, approval_status) VALUES
 ('REQ001', 1, '计算机网络', '计算机科学与技术', '2023', '计算机2023-1班', 6, 1, '1-2', 4, '王老师', 'approved'),
@@ -1037,6 +1042,202 @@ INSERT INTO lab_teaching_request (request_code, semester_id, course_name, major_
 INSERT INTO lab_usage_registration (registration_code, semester_id, scheduling_id, building_id, building_name, room_id, room_name, room_number, use_date, week_no, course_name, class_name, teacher_name, actual_duration, expected_students, actual_students, registration_status, reporter_id, reporter_name, report_time) VALUES
 ('REG001', 1, 1, 2, '实验楼A', 3, 'A101实验室', 'A101', '2025-09-15', 3, '数据结构与算法', '计算机2023-1班', '李老师', 2.0, 45, 43, 'registered', 3, '李老师', '2025-09-15 12:00:00'),
 ('REG002', 1, 2, 2, '实验楼A', 3, 'A101实验室', 'A101', '2025-09-15', 3, '数据结构与算法', '计算机2023-1班', '李老师', 2.0, 45, 44, 'registered', 3, '李老师', '2025-09-15 12:00:00');
+
+-- =====================================================
+-- 设备管理表
+-- =====================================================
+
+-- 设备分类表
+CREATE TABLE IF NOT EXISTS equ_category (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code VARCHAR(50) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(255),
+  sort_order INTEGER DEFAULT 0,
+  status INTEGER DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_equ_category_code ON equ_category(code);
+CREATE INDEX IF NOT EXISTS idx_equ_category_status ON equ_category(status);
+
+-- 设备表
+CREATE TABLE IF NOT EXISTS equ_equipment (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  asset_code VARCHAR(100) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  model VARCHAR(100),
+  category_id INTEGER,
+  unit VARCHAR(20),
+  purchase_date DATE,
+  brand VARCHAR(100),
+  serial_number VARCHAR(100),
+  specification TEXT,
+  price DECIMAL(10,2),
+  funding_source VARCHAR(100),
+  use_years INTEGER,
+  supplier VARCHAR(100),
+  warranty_period VARCHAR(50),
+  location VARCHAR(200),
+  responsible_user_id INTEGER,
+  status VARCHAR(50) DEFAULT 'available',
+  department_id INTEGER,
+  is_important INTEGER DEFAULT 0,
+  tags VARCHAR(500),
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_equ_equipment_code ON equ_equipment(asset_code);
+CREATE INDEX IF NOT EXISTS idx_equ_equipment_category ON equ_equipment(category_id);
+CREATE INDEX IF NOT EXISTS idx_equ_equipment_status ON equ_equipment(status);
+CREATE INDEX IF NOT EXISTS idx_equ_equipment_department ON equ_equipment(department_id);
+
+-- 设备附件表
+CREATE TABLE IF NOT EXISTS equ_equipment_attachment (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  equipment_id INTEGER NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  file_path VARCHAR(500) NOT NULL,
+  file_type VARCHAR(50),
+  file_size INTEGER,
+  description VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_equ_attachment_equipment ON equ_equipment_attachment(equipment_id);
+
+-- 设备借还记录表
+CREATE TABLE IF NOT EXISTS equ_borrow_record (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  borrow_code VARCHAR(100) NOT NULL,
+  equipment_id INTEGER NOT NULL,
+  equipment_name VARCHAR(200),
+  asset_code VARCHAR(100),
+  applicant_id INTEGER NOT NULL,
+  applicant_name VARCHAR(100) NOT NULL,
+  applicant_phone VARCHAR(20),
+  borrow_date TIMESTAMP NOT NULL,
+  expect_return_date TIMESTAMP NOT NULL,
+  actual_return_date TIMESTAMP,
+  use_place VARCHAR(200),
+  purpose TEXT,
+  quantity INTEGER DEFAULT 1,
+  status VARCHAR(50) DEFAULT 'pending',
+  approval_user_id INTEGER,
+  approval_user_name VARCHAR(100),
+  approval_time TIMESTAMP,
+  approval_comment VARCHAR(500),
+  is_supervised INTEGER DEFAULT 0,
+  supervisor_id INTEGER,
+  supervisor_name VARCHAR(100),
+  receive_user_id INTEGER,
+  receive_user_name VARCHAR(100),
+  receive_time TIMESTAMP,
+  check_status VARCHAR(50) DEFAULT 'normal',
+  receive_remark VARCHAR(500),
+  return_user_id INTEGER,
+  return_user_name VARCHAR(100),
+  return_condition VARCHAR(500),
+  return_status VARCHAR(50),
+  remark TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_equ_borrow_code ON equ_borrow_record(borrow_code);
+CREATE INDEX IF NOT EXISTS idx_equ_borrow_equipment ON equ_borrow_record(equipment_id);
+CREATE INDEX IF NOT EXISTS idx_equ_borrow_applicant ON equ_borrow_record(applicant_id);
+CREATE INDEX IF NOT EXISTS idx_equ_borrow_status ON equ_borrow_record(status);
+
+-- 设备维修记录表
+CREATE TABLE IF NOT EXISTS equ_repair_record (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  equipment_id INTEGER NOT NULL,
+  equipment_name VARCHAR(200),
+  asset_code VARCHAR(100),
+  fault_description TEXT,
+  report_user_id INTEGER,
+  report_user_name VARCHAR(100),
+  report_time TIMESTAMP,
+  repair_type VARCHAR(50),
+  repair_content TEXT,
+  repair_user_id INTEGER,
+  repair_user_name VARCHAR(100),
+  repair_start_time TIMESTAMP,
+  repair_end_time TIMESTAMP,
+  repair_cost DECIMAL(10,2),
+  repair_status VARCHAR(50) DEFAULT 'pending',
+  remark TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_equ_repair_equipment ON equ_repair_record(equipment_id);
+CREATE INDEX IF NOT EXISTS idx_equ_repair_status ON equ_repair_record(repair_status);
+
+-- 设备操作日志表
+CREATE TABLE IF NOT EXISTS equ_operation_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  equipment_id INTEGER,
+  equipment_name VARCHAR(200),
+  operation_type VARCHAR(50) NOT NULL,
+  operation_content TEXT,
+  operator_id INTEGER,
+  operator_name VARCHAR(100),
+  operator_ip VARCHAR(50),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_equ_log_equipment ON equ_operation_log(equipment_id);
+CREATE INDEX IF NOT EXISTS idx_equ_log_operator ON equ_operation_log(operator_id);
+CREATE INDEX IF NOT EXISTS idx_equ_log_time ON equ_operation_log(created_at);
+
+-- =====================================================
+-- 设备管理初始数据
+-- =====================================================
+
+-- 设备分类数据
+INSERT INTO equ_category (code, name, description, sort_order, status) VALUES
+('ELEC', '电子设备', '电脑、打印机、投影仪等电子设备', 1, 1),
+('MECH', '机械设备', '实验机械、仪器仪表等', 2, 1),
+('TOOL', '工具器材', '各种实验工具、器材', 3, 1),
+('CHEM', '化学器材', '化学实验仪器、试剂等', 4, 1),
+('BIO', '生物器材', '生物实验设备、显微镜等', 5, 1),
+('COMP', '计算机设备', '电脑、服务器、网络设备', 6, 1);
+
+-- 设备数据
+INSERT INTO equ_equipment (asset_code, name, model, category_id, unit, purchase_date, brand, serial_number, specification, price, funding_source, use_years, supplier, warranty_period, location, responsible_user_id, status, department_id, is_important, tags, description) VALUES
+('EQU001', '联想台式电脑', 'ThinkCentre M730t', 6, '台', '2024-01-15', '联想', 'SN20240115001', 'i5-12400/16G/512G SSD', 5999.00, '教学经费', 5, '联想科技', '3年', '实验楼A-A101-01', 3, 'available', 2, 0, '电脑,教学用', '教学用台式电脑'),
+('EQU002', '戴尔投影仪', 'S340', 1, '台', '2024-02-20', '戴尔', 'SN20240220001', '3500流明/1080P', 4599.00, '教学经费', 5, '戴尔中国', '2年', '实验楼A-A101-02', 3, 'available', 2, 0, '投影仪,多媒体', '多媒体教学投影仪'),
+('EQU003', '惠普打印机', 'LaserJet Pro M404dn', 1, '台', '2024-03-10', '惠普', 'SN20240310001', '黑白激光打印/双面', 1999.00, '办公经费', 3, '惠普中国', '1年', '实验楼A-A102-01', 4, 'available', 2, 0, '打印机,办公用', '办公用激光打印机'),
+('EQU004', '电子显微镜', 'DM2500', 5, '台', '2024-01-01', '徕卡', 'SN20240101001', '光学显微镜/电子目镜', 25000.00, '科研经费', 8, '徕卡中国', '5年', '实验楼B-B101-01', 3, 'available', 2, 1, '显微镜,科研用', '科研用电子显微镜'),
+('EQU005', '示波器', 'DS1102Z-E', 2, '台', '2024-02-01', '普源', 'SN20240201001', '100MHz/双通道', 3899.00, '教学经费', 5, '普源精电', '3年', '实验楼A-A201-01', 4, 'available', 2, 0, '示波器,电子实验', '电子实验用示波器'),
+('EQU006', '服务器', 'PowerEdge R750', 6, '台', '2023-12-01', '戴尔', 'SN20231201001', '2*Gold 6342/128G/2T*4', 45000.00, '科研经费', 6, '戴尔中国', '3年', '实验楼B-B201-01', 3, 'available', 2, 1, '服务器,科研用', '科研用机架服务器'),
+('EQU007', '笔记本电脑', 'ThinkPad X1 Carbon', 6, '台', '2024-04-01', '联想', 'SN20240401001', 'i7-1360P/16G/1TB SSD', 11999.00, '科研经费', 4, '联想科技', '2年', '实验楼B-B102-01', 4, 'borrowed', 2, 0, '笔记本,移动办公', '科研用笔记本电脑'),
+('EQU008', '恒温干燥箱', 'DHG-9070A', 2, '台', '2023-11-01', '精宏', 'SN20231101001', '温度范围10-200℃', 2899.00, '教学经费', 5, '精宏仪器', '3年', '实验楼A-A301-01', 3, 'maintenance', 2, 0, '干燥箱,化学实验', '化学实验用干燥箱'),
+('EQU009', 'PH计', 'PHS-3E', 5, '台', '2024-03-01', '雷磁', 'SN20240301001', 'PH范围0-14', 999.00, '教学经费', 3, '雷磁仪器', '1年', '实验楼B-B301-01', 4, 'available', 2, 0, 'PH计,化学实验', '化学实验PH计'),
+('EQU010', '万用表', 'FLUKE-15B+', 2, '台', '2024-01-20', '福禄克', 'SN20240120001', '数字万用表', 499.00, '教学经费', 3, '福禄克中国', '2年', '实验楼A-A201-02', 4, 'available', 2, 0, '万用表,电子实验', '电子实验用万用表');
+
+-- 设备借还记录数据
+INSERT INTO equ_borrow_record (borrow_code, equipment_id, equipment_name, asset_code, applicant_id, applicant_name, applicant_phone, borrow_date, expect_return_date, use_place, purpose, quantity, status, approval_user_id, approval_user_name, approval_time, approval_comment, receive_user_id, receive_user_name, receive_time, remark) VALUES
+('BRW001', 7, '笔记本电脑', 'EQU007', 2, '张老师', '13800138003', '2024-09-15 09:00:00', '2024-09-20 17:00:00', '校外会议室', '学术报告使用', 1, 'borrowed', 1, '管理员', '2024-09-15 08:30:00', '同意借出', 1, '管理员', '2024-09-15 09:00:00', '用于学术报告'),
+('BRW002', 2, '戴尔投影仪', 'EQU002', 5, '用户1', '13800138004', '2024-09-16 08:00:00', '2024-09-16 18:00:00', '多功能厅', '开学典礼使用', 1, 'pending', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '等待审批');
+
+-- 设备维修记录数据
+INSERT INTO equ_repair_record (equipment_id, equipment_name, asset_code, fault_description, report_user_id, report_user_name, report_time, repair_type, repair_status, remark) VALUES
+(8, '恒温干燥箱', 'EQU008', '温控器失灵，温度不能准确控制', 4, '王老师', '2024-09-10 10:00:00', 'normal', 'maintenance', '等待维修');
+
+-- 设备操作日志数据
+INSERT INTO equ_operation_log (equipment_id, equipment_name, operation_type, operation_content, operator_id, operator_name, operator_ip) VALUES
+(1, '联想台式电脑', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(2, '戴尔投影仪', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(3, '惠普打印机', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(4, '电子显微镜', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(5, '示波器', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(6, '服务器', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(7, '笔记本电脑', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(8, '恒温干燥箱', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(9, 'PH计', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(10, '万用表', 'create', '新增设备', 1, '管理员', '127.0.0.1'),
+(7, '笔记本电脑', 'borrow', '设备借出', 1, '管理员', '127.0.0.1'),
+(8, '恒温干燥箱', 'maintenance', '设备送修', 4, '王老师', '127.0.0.1');
 
 -- 实验项目开出数据
 INSERT INTO edu_experiment_project_offer (task_id, project_id, week_no, week_day, time_slot, group_count, students_per_group, cycle_count, experiment_requirement, building_name, room_number, is_offered, status) VALUES

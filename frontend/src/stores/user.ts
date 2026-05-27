@@ -75,6 +75,11 @@ const fixedMenus: MenuItem[] = [
     createMenuItem(53, '房间管理', '/venue/room', 'House', 5, 3),
     createMenuItem(54, '楼层平面图', '/venue/floor-plan', 'Picture', 5, 4),
   ]),
+  createMenuItem(6, '设备管理', '/equipment', 'Box', 0, 6, [
+    createMenuItem(61, '设备档案', '/equipment/archive', 'FileText', 6, 1),
+    createMenuItem(62, '设备借还', '/equipment/borrow', 'Refresh', 6, 2),
+    createMenuItem(63, '库存与统计', '/equipment/inventory', 'PieChart', 6, 3),
+  ]),
 ]
 
 export const useUserStore = defineStore('user', {

@@ -209,6 +209,33 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/equipment',
+    name: 'Equipment',
+    component: () => import('@/layouts/MainLayout.vue'),
+    redirect: '/equipment/archive',
+    meta: { title: '设备管理', icon: 'Box' },
+    children: [
+      {
+        path: 'archive',
+        name: 'EquipmentArchive',
+        component: () => import('@/views/equipment/archive.vue'),
+        meta: { title: '设备档案', icon: 'FileText' },
+      },
+      {
+        path: 'borrow',
+        name: 'EquipmentBorrow',
+        component: () => import('@/views/equipment/borrow.vue'),
+        meta: { title: '设备借还', icon: 'Refresh' },
+      },
+      {
+        path: 'inventory',
+        name: 'EquipmentInventory',
+        component: () => import('@/views/equipment/inventory.vue'),
+        meta: { title: '库存与统计', icon: 'PieChart' },
+      },
+    ],
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/error/404.vue'),

@@ -92,7 +92,7 @@
         <el-card shadow="hover" class="overview-card">
           <div class="overview-item">
             <div class="overview-icon" style="background-color: #f56c6c">
-              <el-icon :size="24"><CheckCircle /></el-icon>
+              <el-icon :size="24"><CircleCheck /></el-icon>
             </div>
             <div class="overview-content">
               <div class="overview-value">{{ overviewStats.registrationRate }}%</div>

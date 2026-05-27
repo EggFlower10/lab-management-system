@@ -1,65 +1,45 @@
 const http = require('http');
 
-async function testSemesters() {
-  return new Promise((resolve, reject) => {
-    const req = http.request({
-      hostname: 'localhost',
-      port: 7001,
-      path: '/api/v1/semesters',
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoiYWRtaW4iLCJpYXQiOjE3MTU2MTcxNjJ9.NH1xJ5X7n0aYt9r3u1b0F8NnI2y7r7lN9e5V8y7k8I'
-      }
-    }, (res) => {
-      let body = '';
-      res.on('data', (chunk) => body += chunk);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(body));
-        } catch {
-          resolve(body);
-        }
-      });
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
+const options = {
+  hostname: 'localhost',
+  port: 7002,
+  path: '/api/v1/scheduling?weekNo=3',
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoidXNlcjEiLCJpYXQiOjE3Nzk4NTIyMDB9.a1JZ5Y7r5X4Y5JZ5X4Y5JZ5X4Y5JZ5X4Y5JZ5X4Y'
+  }
+};
 
-async function testMajors() {
-  return new Promise((resolve, reject) => {
-    const req = http.request({
-      hostname: 'localhost',
-      port: 7001,
-      path: '/api/v1/majors',
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoiYWRtaW4iLCJpYXQiOjE3MTU2MTcxNjJ9.NH1xJ5X7n0aYt9r3u1b0F8NnI2y7r7lN9e5V8y7k8I'
-      }
-    }, (res) => {
-      let body = '';
-      res.on('data', (chunk) => body += chunk);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(body));
-        } catch {
-          resolve(body);
-        }
-      });
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
-
-async function run() {
-  console.log('=== Testing Semesters API ===');
-  const semesters = await testSemesters();
-  console.log(JSON.stringify(semesters, null, 2));
+const req = http.request(options, (res) => {
+  let data = '';
   
-  console.log('\n=== Testing Majors API ===');
-  const majors = await testMajors();
-  console.log(JSON.stringify(majors, null, 2));
-}
+  res.on('data', (chunk) => {
+    data += chunk;
+  });
+  
+  res.on('end', () => {
+    console.log('状态码:', res.statusCode);
+    console.log('响应数据:', data);
+    
+    try {
+      const result = JSON.parse(data);
+      console.log('');
+      console.log('=== 排课记录列表 ===');
+      if (result.data && result.data.length > 0) {
+        result.data.forEach(item => {
+          console.log(`${item.scheduling_code} | ${item.source_type} | ${item.course_name} | 周${item.week_no} 周${item.week_day} ${item.time_slot_start}`);
+        });
+      } else {
+        console.log('无排课记录');
+      }
+    } catch (err) {
+      console.error('解析JSON失败:', err);
+    }
+  });
+});
 
-run().catch(console.error);
+req.on('error', (e) => {
+  console.error('请求失败:', e);
+});
+
+req.end();

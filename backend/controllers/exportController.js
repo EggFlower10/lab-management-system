@@ -247,7 +247,7 @@ class ExportController {
             SUM(CASE WHEN eo.is_offered = 1 THEN 1 ELSE 0 END) AS actual_count,
             SUM(CASE WHEN eo.is_offered = 0 THEN 1 ELSE 0 END) AS not_offered_count,
             COALESCE(SUM(ep.experiment_hours), 0) AS total_hours,
-            GROUP_CONCAT(CASE WHEN eo.is_offered = 0 THEN ep.project_name END SEPARATOR '; ') AS not_offered_projects
+            GROUP_CONCAT(CASE WHEN eo.is_offered = 0 THEN ep.project_name END, '; ') AS not_offered_projects
           FROM edu_experiment_task et
           LEFT JOIN edu_major m ON et.major_id = m.MajorID
           LEFT JOIN edu_class c ON et.class_id = c.ClassID
@@ -269,7 +269,7 @@ class ExportController {
             SUM(CASE WHEN eo.is_offered = 1 THEN 1 ELSE 0 END) AS actual_count,
             SUM(CASE WHEN eo.is_offered = 0 THEN 1 ELSE 0 END) AS not_offered_count,
             COALESCE(SUM(ep.experiment_hours), 0) AS total_hours,
-            GROUP_CONCAT(CASE WHEN eo.is_offered = 0 THEN ep.project_name END SEPARATOR '; ') AS not_offered_projects
+            GROUP_CONCAT(CASE WHEN eo.is_offered = 0 THEN ep.project_name END, '; ') AS not_offered_projects
           FROM edu_experiment_task et
           LEFT JOIN edu_major m ON et.major_id = m.id
           LEFT JOIN edu_class c ON et.class_id = c.id
@@ -291,7 +291,7 @@ class ExportController {
             SUM(CASE WHEN eo.is_offered = 1 THEN 1 ELSE 0 END) AS actual_count,
             SUM(CASE WHEN eo.is_offered = 0 THEN 1 ELSE 0 END) AS not_offered_count,
             COALESCE(SUM(ep.experiment_hours), 0) AS total_hours,
-            GROUP_CONCAT(CASE WHEN eo.is_offered = 0 THEN ep.project_name END SEPARATOR '; ') AS not_offered_projects
+            GROUP_CONCAT(CASE WHEN eo.is_offered = 0 THEN ep.project_name END, '; ') AS not_offered_projects
           FROM edu_experiment_task et
           LEFT JOIN edu_experiment_project_offer eo ON et.id = eo.task_id
           LEFT JOIN edu_experiment_project ep ON eo.project_id = ep.id
