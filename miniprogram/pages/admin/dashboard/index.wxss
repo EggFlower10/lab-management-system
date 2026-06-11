@@ -1,0 +1,24 @@
+.dashboard-card {
+  padding: 28rpx;
+}
+
+.dashboard-value {
+  display: block;
+  font-size: 46rpx;
+  font-weight: 700;
+  color: #17325f;
+}
+
+.dashboard-label {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 28rpx;
+  color: #1f2a44;
+}
+
+.dashboard-intro {
+  display: block;
+  margin-top: 10rpx;
+  color: #6d7d96;
+  line-height: 1.5;
+}

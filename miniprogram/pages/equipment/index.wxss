@@ -1,0 +1,35 @@
+.stats-grid {
+  margin-top: 24rpx;
+}
+
+.mini-stat {
+  padding: 24rpx 18rpx;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #17408b;
+}
+
+.stat-label {
+  margin-top: 10rpx;
+  display: block;
+  font-size: 22rpx;
+  color: #70809b;
+}
+
+.record-tabs {
+  margin-bottom: 18rpx;
+}
+
+.search-row {
+  margin-top: 0;
+}
+
+.scan-tips {
+  padding: 24rpx 28rpx;
+  margin-bottom: 4rpx;
+}

@@ -1,0 +1,82 @@
+<view class="page-shell">
+  <view class="hero-card">
+    <text class="hero-title">课程实验中心</text>
+    <text class="hero-subtitle">{{heroSubtitle}}</text>
+  </view>
+
+  <view class="btn-row" wx:if="{{canManageCourses}}">
+    <button class="btn-primary" bindtap="openPublish">{{primaryActionLabel}}</button>
+    <button wx:if="{{currentUser.role === 'teacher'}}" class="btn-secondary" bindtap="openApproval">进入审批中心</button>
+  </view>
+
+  <block wx:if="{{courses.length}}">
+    <view wx:for="{{courses}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.teacherName}} · {{item.className}}</text>
+        </view>
+        <text class="capsule">{{item.timeSlot}}</text>
+      </view>
+      <view class="card-line">
+        <text>{{item.date}}</text>
+        <text class="meta-text">{{item.labName}}</text>
+      </view>
+
+      <view wx:if="{{currentUser.role === 'student'}}" class="card-line">
+        <text>签到状态：{{item.signedOut ? '已签退' : item.signedIn ? '已签到' : '未签到'}}</text>
+        <text>报告：{{item.reportSubmitted ? '已提交' : '待提交'}}</text>
+      </view>
+
+      <view wx:if="{{currentUser.role === 'teacher'}}" class="card-line">
+        <text>签到 {{item.signedCount}} 人 / 签退 {{item.signedOutCount}} 人</text>
+        <text>成绩状态：{{item.scoreStatus}}</text>
+      </view>
+      <view wx:if="{{currentUser.role === 'teacher'}}" class="card-line">
+        <text>报告提交 {{item.reportCount}} 份</text>
+        <text class="meta-text">{{item.status === 'upcoming' ? '待开始' : item.status === 'ongoing' ? '进行中' : '已结束'}}</text>
+      </view>
+
+      <view wx:if="{{currentUser.role === 'admin'}}" class="card-line">
+        <text>签到 {{item.signedCount}} 人 / 签退 {{item.signedOutCount}} 人</text>
+        <text>成绩状态：{{item.scoreStatus}}</text>
+      </view>
+      <view wx:if="{{currentUser.role === 'admin'}}" class="card-line">
+        <text>授课教师：{{item.teacherName}}</text>
+        <text>报告提交 {{item.reportCount}} 份</text>
+      </view>
+
+      <view wx:if="{{currentUser.role === 'student'}}" class="btn-row">
+        <button
+          wx:if="{{!item.signedIn}}"
+          class="btn-secondary"
+          data-id="{{item.id}}"
+          bindtap="signIn"
+        >
+          课程签到
+        </button>
+        <button
+          wx:elif="{{item.signedIn && !item.signedOut}}"
+          class="btn-secondary"
+          data-id="{{item.id}}"
+          bindtap="signOut"
+        >
+          课程签退
+        </button>
+        <button wx:else class="btn-light" disabled>已完成签退</button>
+        <button class="btn-primary" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="submitReport">提交报告</button>
+      </view>
+
+      <view wx:if="{{currentUser.role === 'teacher'}}" class="btn-row">
+        <button class="btn-secondary" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="openAttendance">签到管理</button>
+        <button class="btn-primary" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="openGrades">成绩录入</button>
+      </view>
+
+      <view wx:if="{{currentUser.role === 'admin'}}" class="btn-row">
+        <button class="btn-secondary" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="openAttendance">签到统计</button>
+        <button class="btn-primary" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="openGrades">成绩管理</button>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">当前没有相关课程安排。</view>
+</view>

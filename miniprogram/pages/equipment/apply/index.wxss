@@ -1,0 +1,30 @@
+.equipment-summary {
+  margin-top: 24rpx;
+}
+
+.submit-button {
+  margin-top: 28rpx;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.apply-tips {
+  margin-top: 24rpx;
+  padding: 24rpx 28rpx;
+}
+
+.no-margin {
+  margin-bottom: 0;
+}
+
+.hint-text {
+  margin-top: 8rpx;
+  display: block;
+  color: #6f7f98;
+  line-height: 1.5;
+}

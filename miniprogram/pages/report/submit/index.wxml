@@ -1,0 +1,14 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">{{courseName}}</text>
+    <text class="hero-subtitle">填写实验步骤、问题分析、结果截图说明与结论反思。</text>
+  </view>
+
+  <view class="form-card">
+    <view class="form-item">
+      <text class="form-label">报告内容</text>
+      <textarea class="form-textarea large-textarea" value="{{content}}" bindinput="handleInput" placeholder="建议包含：实验目的、步骤、结果、问题与总结" />
+    </view>
+    <button class="btn-primary submit-button" loading="{{submitting}}" bindtap="submit">保存并提交</button>
+  </view>
+</view>

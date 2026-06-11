@@ -1,0 +1,236 @@
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+

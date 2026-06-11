@@ -1,0 +1,7 @@
+.large-textarea {
+  min-height: 360rpx;
+}
+
+.submit-button {
+  margin-top: 28rpx;
+}

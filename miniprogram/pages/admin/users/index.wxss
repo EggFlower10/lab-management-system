@@ -1,0 +1,101 @@
+.stat-grid {
+  margin-top: 24rpx;
+}
+
+.user-stat-card {
+  padding: 28rpx;
+}
+
+.stat-value {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #17325f;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.stat-intro {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #7b8aa3;
+  line-height: 1.5;
+}
+
+.filter-card {
+  margin-top: 28rpx;
+}
+
+.compact-header {
+  margin-top: 0;
+}
+
+.user-card {
+  margin-top: 24rpx;
+}
+
+.title-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+}
+
+.role-capsule {
+  background: #eef4ff;
+  color: #244f9a;
+}
+
+.status-row {
+  margin-top: 18rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.helper-note {
+  font-size: 22rpx;
+  color: #7b8aa3;
+}
+
+.info-line {
+  align-items: flex-start;
+}
+
+.info-text {
+  max-width: 420rpx;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.record-note {
+  margin-top: 18rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 18rpx;
+  background: #f6f8fc;
+  color: #55657f;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.danger-note {
+  background: rgba(219, 72, 72, 0.08);
+  color: #9f2e2e;
+}
+
+.action-btn {
+  font-size: 26rpx;
+}

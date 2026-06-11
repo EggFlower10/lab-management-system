@@ -1,0 +1,51 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">{{heroTitle}}</text>
+    <text class="hero-subtitle">{{heroSubtitle}}</text>
+  </view>
+
+  <view class="form-card">
+    <view class="form-item">
+      <text class="form-label">课程名称</text>
+      <input class="form-input" placeholder="例如：数字孪生实验设计" data-field="name" bindinput="handleInput" value="{{form.name}}" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">上课日期</text>
+      <picker mode="date" value="{{form.date}}" bindchange="handleDateChange">
+        <view class="form-picker">{{form.date}}</view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">上课时段</text>
+      <picker range="{{timeSlots}}" value="{{timeSlotIndex}}" bindchange="handleTimeSlotChange">
+        <view class="form-picker">{{form.timeSlot}}</view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">实验室</text>
+      <picker range="{{labs}}" range-key="name" value="{{labIndex}}" bindchange="handleLabChange">
+        <view class="form-picker">{{selectedLabText}}</view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">授课班级</text>
+      <input class="form-input" placeholder="例如：计科 2024 级 1 班" data-field="className" bindinput="handleInput" value="{{form.className}}" />
+    </view>
+
+    <view wx:if="{{currentUser && currentUser.role === 'admin'}}" class="form-item">
+      <text class="form-label">授课教师</text>
+      <picker range="{{teachers}}" range-key="name" value="{{teacherIndex}}" bindchange="handleTeacherChange">
+        <view class="form-picker">{{selectedTeacherText}}</view>
+      </picker>
+      <text class="helper-text">管理员排课时可直接指定负责教师，便于后续签到统计和成绩管理。</text>
+    </view>
+
+    <view class="btn-row">
+      <button class="btn-primary" bindtap="submit" loading="{{submitting}}">{{submitLabel}}</button>
+    </view>
+  </view>
+</view>

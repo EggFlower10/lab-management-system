@@ -1,0 +1,40 @@
+.lab-filter-card {
+  margin-top: 24rpx;
+}
+
+.reservation-overview {
+  margin-top: 18rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.overview-item {
+  padding: 20rpx;
+  border-radius: 22rpx;
+  background: #f5f8ff;
+}
+
+.overview-label {
+  display: block;
+  font-size: 22rpx;
+  color: #7384a0;
+}
+
+.overview-value {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: #1d3054;
+  font-weight: 600;
+}
+
+.card-line-stack {
+  align-items: flex-start;
+}
+
+.stack-text {
+  max-width: 420rpx;
+  text-align: right;
+  line-height: 1.5;
+}

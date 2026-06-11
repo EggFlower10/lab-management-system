@@ -1,0 +1,32 @@
+<view class="page-shell">
+  <view class="hero-card">
+    <text class="hero-title">{{user.name}}</text>
+    <text class="hero-subtitle">{{roleLabel}} · {{user.studentNo}} · {{user.department}}</text>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">我的概览</text>
+    <text class="section-meta">个人数据汇总</text>
+  </view>
+  <view class="grid-two">
+    <view wx:for="{{stats}}" wx:key="label" class="stat-card mine-stat">
+      <text class="mine-stat-value">{{item.value}}</text>
+      <text class="mine-stat-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">快捷功能</text>
+    <text class="section-meta">常用入口</text>
+  </view>
+  <view class="grid-two">
+    <view wx:for="{{shortcuts}}" wx:key="title" class="action-tile" data-path="{{item.path}}" bindtap="openPage">
+      <text class="action-title">{{item.title}}</text>
+      <text class="action-desc">点击进入对应业务页面</text>
+    </view>
+  </view>
+
+  <view class="btn-row logout-row">
+    <button class="btn-light" bindtap="handleLogout">退出登录</button>
+  </view>
+</view>

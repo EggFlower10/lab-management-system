@@ -1,0 +1,91 @@
+<view class="page-shell without-tabbar" wx:if="{{detail}}">
+  <view class="hero-card">
+    <text class="hero-title">{{detail.labName}}</text>
+    <text class="hero-subtitle">{{detail.date}} {{detail.timeSlot}} · {{detail.statusText}}</text>
+  </view>
+
+  <view class="section-card cover-card">
+    <view class="lab-cover cover-surface">
+      <text class="cover-badge">预约实验室</text>
+      <text class="cover-name">{{detail.labName}}</text>
+      <text class="cover-subtitle">{{detail.labBuilding}} {{detail.labRoomNumber}}</text>
+    </view>
+  </view>
+
+  <view class="section-card detail-panel">
+    <view class="card-line">
+      <text>预约编号</text>
+      <text class="meta-text">{{detail.code}}</text>
+    </view>
+    <view class="card-line">
+      <text>实验室</text>
+      <text class="meta-text">{{detail.labName}}</text>
+    </view>
+    <view class="card-line">
+      <text>位置</text>
+      <text class="meta-text">{{detail.labBuilding}} {{detail.labRoomNumber}}</text>
+    </view>
+    <view class="card-line">
+      <text>项目名称</text>
+      <text class="meta-text">{{detail.projectName}}</text>
+    </view>
+    <view class="card-line card-line-stack">
+      <text>使用用途</text>
+      <text class="meta-text stack-text">{{detail.purpose}}</text>
+    </view>
+    <view class="card-line">
+      <text>参与人数</text>
+      <text class="meta-text">{{detail.headCount}} 人</text>
+    </view>
+    <view class="card-line">
+      <text>申请人</text>
+      <text class="meta-text">{{detail.applicantName}}</text>
+    </view>
+    <view class="card-line card-line-stack">
+      <text>开放时间</text>
+      <text class="meta-text stack-text">{{detail.labOpenTime || '以实验室通知为准'}}</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">签到凭证</text>
+    <text class="status-tag {{detail.checkInStatusClass}}">{{detail.checkInStatusText}}</text>
+  </view>
+  <view class="section-card qr-panel">
+    <block wx:if="{{detail.checkInAvailable}}">
+      <view class="qr-grid">
+        <view wx:for="{{qrRows}}" wx:key="id" class="qr-row">
+          <view wx:for="{{item.cells}}" wx:key="id" class="qr-cell {{item.active ? 'active' : ''}}"></view>
+        </view>
+      </view>
+      <text class="qr-code-text">{{detail.checkInCode}}</text>
+    </block>
+    <view wx:else class="qr-placeholder">审批通过后自动生成签到二维码</view>
+
+    <view class="detail-info-list">
+      <view class="card-line">
+        <text>签到状态</text>
+        <text class="meta-text">{{detail.checkInStatusText}}</text>
+      </view>
+      <view class="card-line">
+        <text>有效时间</text>
+        <text class="meta-text">{{detail.checkInExpiresText}}</text>
+      </view>
+      <view class="card-line card-line-stack">
+        <text>签到说明</text>
+        <text class="meta-text stack-text">{{detail.checkInTip}}</text>
+      </view>
+      <view class="card-line" wx:if="{{detail.checkedInAt}}">
+        <text>签到时间</text>
+        <text class="meta-text">{{detail.checkedInAt}}</text>
+      </view>
+    </view>
+
+    <view class="btn-row" wx:if="{{detail.checkInAvailable}}">
+      <button class="btn-secondary" bindtap="handleCopyCode">复制签到码</button>
+      <button class="btn-primary" wx:if="{{detail.canCheckIn}}" loading="{{checkingIn}}" bindtap="handleCheckIn">立即签到</button>
+      <button class="btn-light" wx:if="{{!detail.canCheckIn && detail.checkedIn}}" disabled>已完成签到</button>
+      <button class="btn-light" wx:if="{{!detail.canCheckIn && !detail.checkedIn}}" disabled>预约当天可签到</button>
+    </view>
+  </view>
+</view>

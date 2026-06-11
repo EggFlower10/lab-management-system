@@ -1,0 +1,12 @@
+.hero-title,
+.hero-subtitle,
+.helper-text {
+  display: block;
+}
+
+.helper-text {
+  margin-top: 12rpx;
+  color: #7b8aa3;
+  font-size: 22rpx;
+  line-height: 1.6;
+}

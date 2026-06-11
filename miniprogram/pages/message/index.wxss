@@ -1,0 +1,46 @@
+.message-card.read {
+  opacity: 0.72;
+}
+
+.message-head {
+  align-items: center;
+}
+
+.message-main {
+  flex: 1;
+  min-width: 0;
+  padding-right: 16rpx;
+}
+
+.message-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1e2d4d;
+  line-height: 1.4;
+}
+
+.message-content {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #8a99b2;
+  line-height: 1.6;
+}
+
+.message-badge {
+  flex-shrink: 0;
+  min-width: 88rpx;
+  height: 72rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  background: #edf3ff;
+  color: #6f8fc7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}

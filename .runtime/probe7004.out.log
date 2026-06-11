@@ -1,0 +1,6 @@
+SQLite 数据库连接成功
+数据库初始化成功，开始初始化测试数据...
+测试数据初始化完成
+scheduling module loaded
+通知已发送: 新课程已发布 -> 学生用户
+服务器运行在 http://localhost:7004

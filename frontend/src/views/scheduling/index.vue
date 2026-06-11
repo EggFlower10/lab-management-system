@@ -217,7 +217,7 @@ import * as XLSX from 'xlsx'
 const viewMode = ref<'table' | 'list'>('table')
 const searchForm = reactive({
   semesterId: 1,
-  weekNo: 1,
+  weekNo: 1 as number | null,
   buildingId: null as number | null,
   roomId: null as number | null,
   majorId: null as number | null,
@@ -459,8 +459,8 @@ function handleSortChange({ prop, order }: { prop: string; order: string }) {
 function getScheduleItems(timeSlot: string, weekDay: number) {
   return scheduleList.value.filter(item => {
     if (item.time_slot_start !== timeSlot) return false
-    if (item.week_day !== weekDay) return false
-    if (searchForm.weekNo && item.week_no !== searchForm.weekNo) return false
+    if (parseInt(item.week_day) !== weekDay) return false
+    if (searchForm.weekNo && parseInt(item.week_no) !== searchForm.weekNo) return false
     return true
   })
 }
@@ -606,7 +606,8 @@ function formatStatus(_row: any, _column: any, cellValue: number) {
   return cellValue === 1 ? '正常' : '已取消'
 }
 
-function formatWeekType(weekType: any) {
+function formatWeekType(_row: any, _column?: any, cellValue?: any) {
+  const weekType = cellValue === undefined ? _row : cellValue
   if (!weekType) return '全部周'
   const typeMap: Record<string, string> = {
     all: '全部周',

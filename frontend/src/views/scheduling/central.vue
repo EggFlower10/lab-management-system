@@ -20,12 +20,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="教师">
-          <el-select v-model="searchForm.teacherId" placeholder="请选择教师" clearable @change="handleSearch" style="width: 150px;">
+          <el-select v-model="searchForm.teacherName" placeholder="请选择教师" clearable @change="handleSearch" style="width: 150px;">
             <el-option
               v-for="teacher in teacherList"
               :key="teacher.id"
               :label="teacher.name"
-              :value="teacher.id"
+              :value="teacher.name"
             />
           </el-select>
         </el-form-item>
@@ -250,7 +250,7 @@ import { get, post, put, del } from '@/utils/request'
 
 const searchForm = reactive({
   semesterId: 1,
-  teacherId: null as number | null,
+  teacherName: '',
   courseName: ''
 })
 
@@ -348,7 +348,7 @@ const groupedScheduleList = computed(() => {
   
   return Object.values(groups).map((item: any) => ({
     ...item,
-    week_nos: [...new Set(item.week_nos)].sort((a: number, b: number) => a - b),
+    week_nos: Array.from(new Set<number>(item.week_nos as number[])).sort((a, b) => a - b),
     week_count: item.week_nos.length,
     week_range: item.week_nos.length > 1 
       ? `${item.week_nos[0]}-${item.week_nos[item.week_nos.length - 1]}周`
@@ -432,6 +432,14 @@ async function loadSchedules() {
       sourceType: 'CentralScheduling'
     }
     
+    if (searchForm.teacherName) {
+      params.teacherName = searchForm.teacherName
+    }
+    
+    if (searchForm.courseName) {
+      params.courseName = searchForm.courseName
+    }
+    
     const res = await get<any[]>('/scheduling', params)
     scheduleList.value = res || []
   } catch (error) {
@@ -445,7 +453,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  searchForm.teacherId = null
+  searchForm.teacherName = ''
   searchForm.courseName = ''
   handleSearch()
 }
@@ -598,6 +606,8 @@ async function handleDelete(row: any) {
     }
   }
 }
+
+void handleDelete
 
 async function handleDeleteAll(row: any) {
   try {
@@ -766,6 +776,7 @@ function formatWeekNo(_row: any, _column: any, cellValue: any) {
 function formatStatus(_row: any, _column: any, cellValue: number) {
   return cellValue === 1 ? '正常' : '已取消'
 }
+void formatStatus
 </script>
 
 <style scoped>

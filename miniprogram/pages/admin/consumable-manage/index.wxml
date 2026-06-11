@@ -1,0 +1,172 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">耗材库存管理</text>
+    <text class="hero-subtitle">把入库、出库、库存盘点和预警处理集中在一个页面里，方便管理员快速处理日常库存事务。</text>
+  </view>
+
+  <view class="grid-two overview-grid">
+    <view wx:for="{{stats}}" wx:key="label" class="stat-card stock-stat-card">
+      <text class="stat-value">{{item.value}}</text>
+      <text class="stat-label">{{item.label}}</text>
+      <text class="stat-intro">{{item.intro}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{lowStockList.length}}" class="notice-card warning-card">
+    <view class="section-header compact-header">
+      <text class="section-title">库存预警</text>
+      <text class="section-meta">{{lowStockList.length}} 项待处理</text>
+    </view>
+    <view class="warning-list">
+      <view wx:for="{{lowStockList}}" wx:key="id" class="warning-item">
+        <view>
+          <text class="warning-name">{{item.name}}</text>
+          <text class="warning-detail">{{item.stock}}{{item.unit}} · 预警值 {{item.warningValue}}{{item.unit}}</text>
+        </view>
+        <button class="btn-light warning-action" data-mode="inbound" data-id="{{item.id}}" bindtap="openQuickAction">去补货</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="form-card operation-card">
+    <view class="section-header compact-header">
+      <text class="section-title">库存操作</text>
+      <text class="section-meta">{{operationMeta.title}}</text>
+    </view>
+
+    <view class="capsule-row mode-row">
+      <view
+        wx:for="{{modeOptions}}"
+        wx:key="key"
+        class="capsule {{operationMode === item.key ? 'active' : ''}}"
+        data-mode="{{item.key}}"
+        bindtap="changeMode"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <text class="panel-desc">{{operationMeta.desc}}</text>
+
+    <block wx:if="{{operationMode === 'catalog'}}">
+      <view class="form-item">
+        <text class="form-label">耗材名称</text>
+        <input class="form-input" placeholder="例如：面包板、杜邦线、焊锡丝" data-field="name" bindinput="handleInput" value="{{form.name}}" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">耗材分类</text>
+        <input class="form-input" placeholder="例如：电子配件、打印耗材" data-field="category" bindinput="handleInput" value="{{form.category}}" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">计量单位</text>
+        <input class="form-input" placeholder="例如：个 / 卷 / 包" data-field="unit" bindinput="handleInput" value="{{form.unit}}" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">当前库存</text>
+        <input class="form-input" type="number" placeholder="请输入当前库存" data-field="stock" bindinput="handleInput" value="{{form.stock}}" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">预警阈值</text>
+        <input class="form-input" type="number" placeholder="请输入低库存预警值" data-field="warningValue" bindinput="handleInput" value="{{form.warningValue}}" />
+      </view>
+      <view class="btn-row">
+        <button class="btn-primary" bindtap="submit">{{form.id ? '保存修改' : '新增耗材'}}</button>
+        <button class="btn-light" bindtap="resetForm">重置表单</button>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="form-item">
+        <text class="form-label">选择耗材</text>
+        <picker range="{{list}}" range-key="name" value="{{operationIndex}}" bindchange="changeOperationTarget">
+          <view class="form-picker">{{operationTarget ? operationTarget.name : '请选择耗材'}}</view>
+        </picker>
+      </view>
+
+      <view wx:if="{{operationTarget}}" class="selected-summary">
+        <view class="card-title-row">
+          <view>
+            <text class="card-title">{{operationTarget.name}}</text>
+            <text class="card-subtitle">{{operationTarget.category}}</text>
+          </view>
+          <text class="status-tag {{operationTarget.statusClass}}">{{operationTarget.statusText}}</text>
+        </view>
+        <view class="card-line">
+          <text>当前库存</text>
+          <text class="meta-text">{{operationTarget.stock}}{{operationTarget.unit}}</text>
+        </view>
+        <view class="card-line">
+          <text>预警阈值</text>
+          <text class="meta-text">{{operationTarget.warningValue}}{{operationTarget.unit}}</text>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">{{operationMeta.inputLabel}}</text>
+        <input class="form-input" type="number" data-field="quantity" bindinput="handleOperationInput" value="{{operationForm.quantity}}" placeholder="{{operationMeta.placeholder}}" />
+        <text wx:if="{{operationMeta.helperText}}" class="helper-text">{{operationMeta.helperText}}</text>
+      </view>
+
+      <view wx:if="{{operationMeta.previewText}}" class="preview-box">
+        <text class="preview-title">变更预览</text>
+        <text class="preview-text">{{operationMeta.previewText}}</text>
+      </view>
+
+      <view class="btn-row">
+        <button class="btn-primary" bindtap="submitOperation">{{operationMeta.submitLabel}}</button>
+        <button class="btn-light" bindtap="resetOperation">重置输入</button>
+      </view>
+    </block>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">库存列表</text>
+    <text class="section-meta">{{filteredList.length}} / {{list.length}} 类</text>
+  </view>
+
+  <view class="capsule-row filter-row">
+    <view
+      wx:for="{{filterOptions}}"
+      wx:key="key"
+      class="capsule {{activeFilter === item.key ? 'active' : ''}}"
+      data-filter="{{item.key}}"
+      bindtap="changeFilter"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <block wx:if="{{filteredList.length}}">
+    <view wx:for="{{filteredList}}" wx:key="id" class="list-card stock-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.category}}</text>
+        </view>
+        <text class="status-tag {{item.statusClass}}">{{item.stock}}{{item.unit}}</text>
+      </view>
+      <view class="card-line">
+        <text>库存状态</text>
+        <text class="meta-text">{{item.statusText}}</text>
+      </view>
+      <view class="card-line">
+        <text>预警阈值</text>
+        <text class="meta-text">{{item.warningValue}}{{item.unit}}</text>
+      </view>
+      <view class="card-line">
+        <text>预警说明</text>
+        <text class="meta-text">{{item.warningHint}}</text>
+      </view>
+      <view class="btn-row">
+        <button class="btn-secondary" data-id="{{item.id}}" bindtap="editItem">编辑</button>
+        <button class="btn-secondary" data-mode="inbound" data-id="{{item.id}}" bindtap="openQuickAction">入库</button>
+      </view>
+      <view class="btn-row">
+        <button class="btn-light" data-mode="outbound" data-id="{{item.id}}" bindtap="openQuickAction">出库</button>
+        <button class="btn-light" data-mode="stocktake" data-id="{{item.id}}" bindtap="openQuickAction">盘点</button>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="empty-card">当前筛选条件下暂无耗材记录。</view>
+</view>

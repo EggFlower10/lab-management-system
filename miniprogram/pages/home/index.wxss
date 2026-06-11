@@ -1,0 +1,24 @@
+.banner-swiper {
+  height: 236rpx;
+}
+
+.banner-card {
+  padding: 30rpx;
+  height: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #fff6e8 0%, #ffffff 48%, #ebf4ff 100%);
+}
+
+.banner-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #193258;
+}
+
+.banner-subtitle {
+  display: block;
+  margin-top: 18rpx;
+  line-height: 1.7;
+  color: #667895;
+}

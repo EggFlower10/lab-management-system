@@ -1,0 +1,59 @@
+<view class="page-shell without-tabbar login-page">
+  <view class="hero-card">
+    <text class="hero-title">完善微信认证信息</text>
+    <text class="hero-subtitle">{{heroSubtitle}}</text>
+  </view>
+
+  <view wx:if="{{draft}}" class="list-card summary-card">
+    <view class="card-title-row">
+      <view>
+        <text class="card-title">{{draft.nickName || '微信用户'}}</text>
+        <text class="card-subtitle">当前申请身份：{{roleLabel}}</text>
+      </view>
+      <text class="capsule active">{{roleLabel}}</text>
+    </view>
+    <view class="card-line">
+      <text>登录方式</text>
+      <text class="meta-text">微信一键登录</text>
+    </view>
+    <view class="card-line">
+      <text>手机号授权</text>
+      <text class="meta-text">{{phoneAuthorized ? '已完成微信授权' : '可授权后再确认号码'}}</text>
+    </view>
+  </view>
+
+  <view class="form-card bind-form">
+    <view class="form-item">
+      <text class="form-label">姓名</text>
+      <input class="form-input" value="{{form.name}}" data-field="name" bindinput="handleInput" placeholder="请输入真实姓名" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">手机号</text>
+      <input class="form-input" type="number" value="{{form.phone}}" data-field="phone" bindinput="handleInput" placeholder="请输入常用手机号" />
+      <view class="btn-row phone-row">
+        <button class="btn-secondary tiny-btn" open-type="getPhoneNumber" bindgetphonenumber="handleGetPhoneNumber">微信授权手机号</button>
+      </view>
+      <text class="helper-text">若微信授权后未自动回填，可继续手动输入常用手机号完成绑定。</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">{{identityLabel}}</text>
+      <input class="form-input" value="{{form.identityNo}}" data-field="identityNo" bindinput="handleInput" placeholder="请输入{{identityLabel}}" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">{{departmentLabel}}</text>
+      <input class="form-input" value="{{form.department}}" data-field="department" bindinput="handleInput" placeholder="请输入{{departmentLabel}}" />
+    </view>
+
+    <view class="notice-card auth-note">
+      <text class="card-title">认证说明</text>
+      <text class="card-subtitle">学生、教师、管理员都会走同一套身份认证流程。已存在且审核通过的账号会在绑定完成后直接登录；新申请或待审核账号会进入管理员审核队列。</text>
+    </view>
+
+    <view class="btn-row">
+      <button class="btn-primary" bindtap="submit" loading="{{submitting}}">提交身份认证</button>
+    </view>
+  </view>
+</view>

@@ -209,6 +209,78 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/equipment',
+    name: 'Equipment',
+    component: () => import('@/layouts/MainLayout.vue'),
+    redirect: '/equipment/archive',
+    meta: { title: '设备管理', icon: 'Box' },
+    children: [
+      {
+        path: 'archive',
+        name: 'EquipmentArchive',
+        component: () => import('@/views/equipment/archive.vue'),
+        meta: { title: '设备档案', icon: 'FileText' },
+      },
+      {
+        path: 'borrow',
+        name: 'EquipmentBorrow',
+        component: () => import('@/views/equipment/borrow.vue'),
+        meta: { title: '设备借还', icon: 'Refresh' },
+      },
+      {
+        path: 'inventory',
+        name: 'EquipmentInventory',
+        component: () => import('@/views/equipment/inventory.vue'),
+        meta: { title: '库存与统计', icon: 'PieChart' },
+      },
+    ],
+  },
+  {
+    path: '/consumable',
+    name: 'Consumable',
+    component: () => import('@/layouts/MainLayout.vue'),
+    redirect: '/consumable/archive',
+    meta: { title: '耗材管理', icon: 'ShoppingCart' },
+    children: [
+      {
+        path: 'archive',
+        name: 'ConsumableArchive',
+        component: () => import('@/views/consumable/archive.vue'),
+        meta: { title: '耗材档案', icon: 'Folder' },
+      },
+      {
+        path: 'stock-in',
+        name: 'ConsumableStockIn',
+        component: () => import('@/views/consumable/stock-in.vue'),
+        meta: { title: '入库管理', icon: 'Upload' },
+      },
+      {
+        path: 'stock-out',
+        name: 'ConsumableStockOut',
+        component: () => import('@/views/consumable/stock-out.vue'),
+        meta: { title: '出库管理', icon: 'Download' },
+      },
+      {
+        path: 'stock',
+        name: 'ConsumableStock',
+        component: () => import('@/views/consumable/stock.vue'),
+        meta: { title: '库存管理', icon: 'Store' },
+      },
+      {
+        path: 'settings',
+        name: 'ConsumableSettings',
+        component: () => import('@/views/consumable/settings.vue'),
+        meta: { title: '鑰楁潗璁剧疆', icon: 'Tools' },
+      },
+      {
+        path: 'statistics',
+        name: 'ConsumableStatistics',
+        component: () => import('@/views/consumable/statistics.vue'),
+        meta: { title: '数据统计', icon: 'TrendCharts' },
+      },
+    ],
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/error/404.vue'),

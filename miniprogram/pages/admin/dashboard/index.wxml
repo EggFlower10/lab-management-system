@@ -1,0 +1,53 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">管理看板</text>
+    <text class="hero-subtitle">汇总预约审批、设备借用和耗材库存预警，帮助管理员快速判断资源压力。</text>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">核心指标</text>
+    <text class="section-meta">实时汇总</text>
+  </view>
+  <view class="grid-two">
+    <view wx:for="{{cards}}" wx:key="label" class="stat-card dashboard-card">
+      <text class="dashboard-value">{{item.value}}</text>
+      <text class="dashboard-label">{{item.label}}</text>
+      <text class="dashboard-intro">{{item.intro}}</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">实验室使用热度</text>
+    <text class="section-meta">按已通过预约统计</text>
+  </view>
+  <view wx:for="{{usageList}}" wx:key="id" class="list-card">
+    <view class="card-title-row">
+      <view>
+        <text class="card-title">{{item.name}}</text>
+        <text class="card-subtitle">{{item.statusText}}</text>
+      </view>
+      <text class="capsule">{{item.value}} 次</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">低库存预警</text>
+    <text class="section-meta">{{lowStockList.length}} 项</text>
+  </view>
+  <block wx:if="{{lowStockList.length}}">
+    <view wx:for="{{lowStockList}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.category}}</text>
+        </view>
+        <text class="status-tag status-maintenance">{{item.stock}}{{item.unit}}</text>
+      </view>
+      <view class="card-line">
+        <text>预警阈值</text>
+        <text class="meta-text">{{item.warningValue}}{{item.unit}}</text>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">当前没有低库存耗材，库存状态良好。</view>
+</view>
