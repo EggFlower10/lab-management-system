@@ -1,0 +1,460 @@
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[2m17:01:05[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "element-plus/es/components/textarea/style/css" from "src\views\consumable\stock-in.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/Users/xdanh/Pictures/lab-management-system/frontend/src/views/consumable/stock-in.vue[39m:8:133
+[33m  6  |  import { ElDialog as __unplugin_components_15 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/dialog/style/css';
+  7  |  import { ElForm as __unplugin_components_14 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form/style/css';
+  8  |  import { ElTextarea as __unplugin_components_13 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/textarea/style/css';
+     |                                                                                                                                      ^
+  9  |  import { ElInputNumber as __unplugin_components_12 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input-number/style/css';
+  10 |  import { ElInput as __unplugin_components_11 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input/style/css';[39m
+      at formatError (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44066:46)
+      at TransformContext.error (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44062:19)
+      at normalizeUrl (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41845:33)
+      at processTicksAndRejections (node:internal/process/task_queues:96:5)
+      at async file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41999:47
+      at async Promise.all (index 23)
+      at async TransformContext.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41915:13)
+      at async Object.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44356:30)
+      at async loadAndTransform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:55088:29)
+      at async viteTransformMiddleware (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:64699:32)
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[2m17:01:08[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "element-plus/es/components/textarea/style/css" from "src\views\consumable\stock-out.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/Users/xdanh/Pictures/lab-management-system/frontend/src/views/consumable/stock-out.vue[39m:8:133
+[33m  6  |  import { ElDialog as __unplugin_components_15 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/dialog/style/css';
+  7  |  import { ElForm as __unplugin_components_14 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form/style/css';
+  8  |  import { ElTextarea as __unplugin_components_13 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/textarea/style/css';
+     |                                                                                                                                      ^
+  9  |  import { ElInputNumber as __unplugin_components_12 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input-number/style/css';
+  10 |  import { ElInput as __unplugin_components_11 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input/style/css';[39m
+      at formatError (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44066:46)
+      at TransformContext.error (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44062:19)
+      at normalizeUrl (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41845:33)
+      at processTicksAndRejections (node:internal/process/task_queues:96:5)
+      at async file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41999:47
+      at async Promise.all (index 23)
+      at async TransformContext.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41915:13)
+      at async Object.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44356:30)
+      at async loadAndTransform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:55088:29)
+      at async viteTransformMiddleware (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:64699:32)
+[2m17:01:10[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "element-plus/es/components/textarea/style/css" from "src\views\consumable\stock.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/Users/xdanh/Pictures/lab-management-system/frontend/src/views/consumable/stock.vue[39m:5:133
+[33m  3  |  import { ElDialog as __unplugin_components_20 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/dialog/style/css';
+  4  |  import { ElForm as __unplugin_components_19 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form/style/css';
+  5  |  import { ElTextarea as __unplugin_components_18 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/textarea/style/css';
+     |                                                                                                                                      ^
+  6  |  import { ElInputNumber as __unplugin_components_17 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input-number/style/css';
+  7  |  import { ElFormItem as __unplugin_components_16 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form-item/style/css';[39m
+      at formatError (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44066:46)
+      at TransformContext.error (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44062:19)
+      at normalizeUrl (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41845:33)
+      at processTicksAndRejections (node:internal/process/task_queues:96:5)
+      at async file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41999:47
+      at async Promise.all (index 14)
+      at async TransformContext.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41915:13)
+      at async Object.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44356:30)
+      at async loadAndTransform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:55088:29)
+      at async viteTransformMiddleware (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:64699:32)
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[2m17:08:31[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "element-plus/es/components/textarea/style/css" from "src\views\consumable\stock-in.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/Users/xdanh/Pictures/lab-management-system/frontend/src/views/consumable/stock-in.vue[39m:8:133
+[33m  6  |  import { ElDialog as __unplugin_components_15 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/dialog/style/css';
+  7  |  import { ElForm as __unplugin_components_14 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form/style/css';
+  8  |  import { ElTextarea as __unplugin_components_13 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/textarea/style/css';
+     |                                                                                                                                      ^
+  9  |  import { ElInputNumber as __unplugin_components_12 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input-number/style/css';
+  10 |  import { ElInput as __unplugin_components_11 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input/style/css';[39m
+      at formatError (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44066:46)
+      at TransformContext.error (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44062:19)
+      at normalizeUrl (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41845:33)
+      at processTicksAndRejections (node:internal/process/task_queues:96:5)
+      at async file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41999:47
+      at async Promise.all (index 23)
+      at async TransformContext.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41915:13)
+      at async Object.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44356:30)
+      at async loadAndTransform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:55088:29)
+      at async viteTransformMiddleware (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:64699:32)
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[2m18:44:43[22m [31m[1m[vite][22m[39m [31mhttp proxy error at /api/v1/notification/count-unread:[39m
+Error: connect ECONNREFUSED 127.0.0.1:7002
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1278:16)
+[2m18:46:09[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "element-plus/es/components/textarea/style/css" from "src\views\consumable\stock-out.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/Users/xdanh/Pictures/lab-management-system/frontend/src/views/consumable/stock-out.vue[39m:8:133
+[33m  6  |  import { ElDialog as __unplugin_components_15 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/dialog/style/css';
+  7  |  import { ElForm as __unplugin_components_14 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form/style/css';
+  8  |  import { ElTextarea as __unplugin_components_13 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/textarea/style/css';
+     |                                                                                                                                      ^
+  9  |  import { ElInputNumber as __unplugin_components_12 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input-number/style/css';
+  10 |  import { ElInput as __unplugin_components_11 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input/style/css';[39m
+      at formatError (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44066:46)
+      at TransformContext.error (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44062:19)
+      at normalizeUrl (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41845:33)
+      at processTicksAndRejections (node:internal/process/task_queues:96:5)
+      at async file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41999:47
+      at async Promise.all (index 23)
+      at async TransformContext.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41915:13)
+      at async Object.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44356:30)
+      at async loadAndTransform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:55088:29)
+      at async viteTransformMiddleware (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:64699:32)
+[2m18:46:20[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "element-plus/es/components/textarea/style/css" from "src\views\consumable\stock.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mD:/Users/xdanh/Pictures/lab-management-system/frontend/src/views/consumable/stock.vue[39m:5:133
+[33m  3  |  import { ElDialog as __unplugin_components_20 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/dialog/style/css';
+  4  |  import { ElForm as __unplugin_components_19 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form/style/css';
+  5  |  import { ElTextarea as __unplugin_components_18 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/textarea/style/css';
+     |                                                                                                                                      ^
+  6  |  import { ElInputNumber as __unplugin_components_17 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/input-number/style/css';
+  7  |  import { ElFormItem as __unplugin_components_16 } from 'element-plus/es';import 'element-plus/es/components/base/style/css';import 'element-plus/es/components/form-item/style/css';[39m
+      at formatError (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44066:46)
+      at TransformContext.error (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44062:19)
+      at normalizeUrl (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41845:33)
+      at processTicksAndRejections (node:internal/process/task_queues:96:5)
+      at async file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41999:47
+      at async Promise.all (index 14)
+      at async TransformContext.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:41915:13)
+      at async Object.transform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:44356:30)
+      at async loadAndTransform (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:55088:29)
+      at async viteTransformMiddleware (file:///D:/Users/xdanh/Pictures/lab-management-system/frontend/node_modules/vite/dist/node/chunks/dep-827b23df.js:64699:32)
+[2m19:06:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error at /api/v1/notification/count-unread:[39m
+Error: connect ECONNREFUSED 127.0.0.1:7002
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1278:16)
+[2m19:07:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error at /api/v1/notification/count-unread:[39m
+Error: connect ECONNREFUSED 127.0.0.1:7002
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1278:16)
+[2m19:08:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error at /api/v1/notification/count-unread:[39m
+Error: connect ECONNREFUSED 127.0.0.1:7002
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1278:16)
+[2m19:09:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error at /api/v1/notification/count-unread:[39m
+Error: connect ECONNREFUSED 127.0.0.1:7002
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1278:16)
+[2m19:10:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error at /api/v1/notification/count-unread:[39m
+Error: connect ECONNREFUSED 127.0.0.1:7002
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1278:16)
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 26.7015706806%)
+color.adjust($color, $lightness: 10%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+27 │     color: lighten($primary-color, 10%);
+   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src\styles\index.scss 27:12  root stylesheet
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+

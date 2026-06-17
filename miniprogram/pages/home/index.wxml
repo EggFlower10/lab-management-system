@@ -1,0 +1,90 @@
+<view class="page-shell">
+  <view class="hero-card">
+    <text class="hero-title">你好，{{user.name}}</text>
+    <text class="hero-subtitle">{{user.department}} · 今日待处理 {{unreadCount}} 条消息，已生效预约 {{reservationCount}} 条。</text>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">公告轮播</text>
+    <text class="section-meta">安全 / 通知 / 活动</text>
+  </view>
+  <swiper class="banner-swiper" autoplay circular interval="4200">
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <view class="notice-card banner-card">
+        <text class="banner-title">{{item.title}}</text>
+        <text class="banner-subtitle">{{item.subtitle}}</text>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <view class="section-header">
+    <text class="section-title">快捷入口</text>
+    <text class="section-meta">高频操作直达</text>
+  </view>
+  <view class="grid-two">
+    <view wx:for="{{quickActions}}" wx:key="title" class="action-tile" data-path="{{item.path}}" bindtap="goTo">
+      <text class="action-title">{{item.title}}</text>
+      <text class="action-desc">{{item.desc}}</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">今日课程</text>
+    <text class="section-meta">{{todayCourses.length}} 门</text>
+  </view>
+  <block wx:if="{{todayCourses.length}}">
+    <view wx:for="{{todayCourses}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.teacherName}} · {{item.className}}</text>
+        </view>
+        <text class="capsule">{{item.timeSlot}}</text>
+      </view>
+      <view class="card-line">
+        <text>{{item.labName}}</text>
+        <text class="meta-text">{{item.scoreStatus}}</text>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">今天还没有排课，适合安排实验室预约或设备维护。</view>
+
+  <view class="section-header">
+    <text class="section-title">今日预约</text>
+    <text class="section-meta">{{todayReservations.length}} 条</text>
+  </view>
+  <block wx:if="{{todayReservations.length}}">
+    <view wx:for="{{todayReservations}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.labName}}</text>
+          <text class="card-subtitle">{{item.projectName}}</text>
+        </view>
+        <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+      </view>
+      <view class="card-line">
+        <text>{{item.date}} {{item.timeSlot}}</text>
+        <text>{{item.headCount}} 人</text>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">今天还没有预约记录，先去看看空闲实验室吧。</view>
+
+  <view class="section-header">
+    <text class="section-title">实验室状态</text>
+    <text class="section-meta">点击查看详情</text>
+  </view>
+  <view wx:for="{{quickLabs}}" wx:key="id" class="list-card" data-id="{{item.id}}" bindtap="openLab">
+    <view class="card-title-row">
+      <view>
+        <text class="card-title">{{item.name}}</text>
+        <text class="card-subtitle">{{item.building}} {{item.roomNumber}}</text>
+      </view>
+      <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+    </view>
+    <view class="card-line">
+      <text>容纳 {{item.capacity}} 人</text>
+      <text>{{item.activeCount}} 条进行中安排</text>
+    </view>
+  </view>
+</view>

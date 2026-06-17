@@ -1,0 +1,68 @@
+
+> lab-management-frontend@1.0.0 dev
+> vite
+
+
+  [32m[1mVITE[22m v4.5.14[39m  [2mready in [0m[1m463[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m3000[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m17:00:15[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33melement-plus/es, element-plus/es/components/base/style/css, element-plus/es/components/form/style/css, element-plus/es/components/button/style/css, element-plus/es/components/form-item/style/css, element-plus/es/components/input/style/css[32m[39m
+[2m17:00:15[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[2m17:00:17[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33melement-plus/es/components/container/style/css, element-plus/es/components/footer/style/css, element-plus/es/components/main/style/css, element-plus/es/components/header/style/css, element-plus/es/components/aside/style/css, element-plus/es/components/icon/style/css, element-plus/es/components/scrollbar/style/css, element-plus/es/components/menu/style/css, element-plus/es/components/breadcrumb/style/css, element-plus/es/components/breadcrumb-item/style/css, element-plus/es/components/dialog/style/css, element-plus/es/components/drawer/style/css, element-plus/es/components/dropdown/style/css, element-plus/es/components/dropdown-menu/style/css, element-plus/es/components/dropdown-item/style/css, element-plus/es/components/avatar/style/css, element-plus/es/components/badge/style/css, element-plus/es/components/sub-menu/style/css, element-plus/es/components/menu-item/style/css[32m[39m
+[2m17:00:17[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[2m17:00:23[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33melement-plus/es/components/loading/style/css, element-plus/es/components/descriptions/style/css, element-plus/es/components/descriptions-item/style/css, element-plus/es/components/input-number/style/css, element-plus/es/components/row/style/css, element-plus/es/components/col/style/css, element-plus/es/components/card/style/css, element-plus/es/components/pagination/style/css, element-plus/es/components/table/style/css, element-plus/es/components/tag/style/css, element-plus/es/components/table-column/style/css, element-plus/es/components/select/style/css, element-plus/es/components/option/style/css[32m[39m
+[2m17:00:23[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[2m17:01:06[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33melement-plus/es/components/radio-group/style/css, element-plus/es/components/radio/style/css, element-plus/es/components/date-picker/style/css[32m[39m
+[2m17:01:06[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[2m17:01:10[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33melement-plus/es/components/progress/style/css, element-plus/es/components/statistic/style/css, element-plus/es/components/switch/style/css[32m[39m
+[2m17:01:10[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[2m17:04:39[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/archive.vue[22m
+[2m17:12:18[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/consumable/stock-in.vue[22m
+[2m17:12:43[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/consumable/stock-in.vue[22m
+[2m18:51:38[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/consumable/stock-out.vue[22m
+[2m18:51:38[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/consumable/stock.vue[22m
+[2m18:54:43[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/statistics.vue[22m
+[2m18:54:55[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/statistics.vue[22m
+[2m18:58:37[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock.vue[22m
+[2m19:13:26[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m20:23:03[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/router/index.ts[22m
+[2m20:23:47[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/stores/user.ts[22m
+[2m20:24:20[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/stores/user.ts[22m
+[2m20:25:20[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/stores/user.ts[22m
+[2m20:26:09[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock.vue, /src/views/consumable/stock.vue?vue&type=style&index=0&scoped=991a5453&lang.css[22m
+[2m20:27:59[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue, /src/views/consumable/stock-in.vue?vue&type=style&index=0&scoped=8ac68392&lang.css[22m
+[2m20:28:51[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue, /src/views/consumable/stock-in.vue?vue&type=style&index=0&scoped=8ac68392&lang.css[22m
+[2m20:29:50[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue, /src/views/consumable/stock-out.vue?vue&type=style&index=0&scoped=32759969&lang.css[22m
+[2m20:30:51[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue, /src/views/consumable/stock-out.vue?vue&type=style&index=0&scoped=32759969&lang.css[22m
+[2m20:33:08[22m [36m[1m[vite][22m[39m changed tsconfig file detected: D:\Users\xdanh\Pictures\lab-management-system\frontend\tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m20:34:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/archive.vue[22m
+[2m20:34:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/statistics.vue[22m
+[2m20:34:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m20:34:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock.vue[22m
+[2m20:44:50[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock.vue[22m
+[2m21:04:05[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock.vue[22m
+[2m21:04:32[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock.vue[22m
+[2m21:04:37[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock.vue?vue&type=style&index=0&scoped=991a5453&lang.css[22m
+[2m21:04:55[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/stores/user.ts[22m
+[2m21:04:55[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/router/index.ts[22m
+[2m21:15:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/settings.vue[22m
+[2m21:24:14[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue[22m
+[2m21:24:23[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue[22m
+[2m21:30:17[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue[22m
+[2m22:47:28[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue[22m
+[2m22:47:42[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue[22m
+[2m22:54:01[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/utils/request.ts[22m
+[2m22:54:01[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-out.vue[22m
+[2m23:02:01[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:02:50[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:03:48[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:11:43[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:12:30[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:13:44[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:14:19[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:22:18[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:22:30[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:25:39[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:25:55[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m
+[2m23:26:07[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/consumable/stock-in.vue[22m

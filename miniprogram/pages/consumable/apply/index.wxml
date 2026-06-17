@@ -1,0 +1,85 @@
+<view class="page-shell without-tabbar" wx:if="{{item}}">
+  <view class="hero-card">
+    <text class="hero-title">{{item.name}}</text>
+    <text class="hero-subtitle">{{item.category}} · 当前库存 {{item.stock}}{{item.unit}} · 预警值 {{item.warningValue}}{{item.unit}}</text>
+  </view>
+
+  <view class="grid-two stat-grid">
+    <view class="stat-card">
+      <text class="stat-label">当前库存</text>
+      <text class="stat-value">{{item.stock}}{{item.unit}}</text>
+      <text class="stat-intro">提交数量不能超过当前可用库存</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-label">审批方式</text>
+      <text class="stat-value small-value">{{approvalModeLabel}}</text>
+      <text class="stat-intro">{{currentUser.role === 'admin' ? '管理员提交后会直接扣减库存' : '提交后由管理员审批发放'}}</text>
+    </view>
+  </view>
+
+  <view class="notice-card flow-card">
+    <view class="notice-head">
+      <text class="notice-title">审批流程</text>
+      <text class="status-tag {{item.isLowStock ? 'status-maintenance' : 'status-pending'}}">{{item.isLowStock ? '库存预警' : '库存正常'}}</text>
+    </view>
+    <text class="notice-text">{{flowText}}</text>
+    <text wx:if="{{item.isLowStock}}" class="tiny notice-hint">当前库存已接近预警线，本次提交后系统会自动提醒管理员关注补货。</text>
+  </view>
+
+  <view class="form-card">
+    <view class="section-header compact-header">
+      <text class="section-title">填写申请</text>
+      <text class="section-meta">请按实际需求填写</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">申请数量</text>
+      <input
+        class="form-input"
+        type="number"
+        value="{{form.quantity}}"
+        data-field="quantity"
+        bindinput="handleInput"
+        placeholder="请输入申请数量"
+      />
+      <text class="tiny helper-text">最多可申请 {{item.stock}}{{item.unit}}</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">使用用途</text>
+      <textarea
+        class="form-textarea"
+        value="{{form.purpose}}"
+        data-field="purpose"
+        bindinput="handleInput"
+        placeholder="请说明实验项目、课程名称或具体使用场景"
+      ></textarea>
+    </view>
+
+    <view class="preset-row">
+      <view
+        wx:for="{{purposePresets}}"
+        wx:key="*this"
+        wx:for-item="preset"
+        class="preset-chip"
+        data-value="{{preset}}"
+        bindtap="usePreset"
+      >
+        {{preset}}
+      </view>
+    </view>
+
+    <button
+      class="btn-primary submit-button"
+      loading="{{submitting}}"
+      disabled="{{item.outOfStock}}"
+      bindtap="submit"
+    >
+      {{item.outOfStock ? '当前库存不足' : submitLabel}}
+    </button>
+  </view>
+</view>
+
+<view class="page-shell without-tabbar" wx:else>
+  <view class="empty-card">未找到该耗材信息，请返回列表重试。</view>
+</view>

@@ -1,0 +1,99 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">用户管理</text>
+    <text class="hero-subtitle">支持用户审核、权限分配与黑名单管理，帮助管理员统一维护账号状态。</text>
+  </view>
+
+  <view class="grid-two stat-grid">
+    <view wx:for="{{stats}}" wx:key="label" class="stat-card user-stat-card">
+      <text class="stat-value">{{item.value}}</text>
+      <text class="stat-label">{{item.label}}</text>
+      <text class="stat-intro">{{item.intro}}</text>
+    </view>
+  </view>
+
+  <view class="form-card filter-card">
+    <view class="section-header compact-header">
+      <text class="section-title">筛选用户</text>
+      <text class="section-meta">{{filteredUsers.length}} 人</text>
+    </view>
+    <view class="capsule-row">
+      <view
+        wx:for="{{filters}}"
+        wx:key="key"
+        class="capsule {{activeFilter === item.key ? 'active' : ''}}"
+        data-filter="{{item.key}}"
+        bindtap="changeFilter"
+      >
+        {{item.label}} {{item.count}}
+      </view>
+    </view>
+  </view>
+
+  <block wx:if="{{filteredUsers.length}}">
+    <view wx:for="{{filteredUsers}}" wx:key="id" class="list-card user-card">
+      <view class="card-title-row">
+        <view class="title-main">
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.username}} · {{item.department}}</text>
+        </view>
+        <view class="badge-column">
+          <text class="capsule role-capsule">{{item.roleLabel}}</text>
+          <text class="status-tag {{item.auditStatusClass}}">{{item.auditStatusText}}</text>
+        </view>
+      </view>
+
+      <view class="status-row">
+        <text class="status-tag {{item.blacklistClass}}">{{item.blacklistText}}</text>
+        <text wx:if="{{item.isSelf}}" class="helper-note">当前登录账号</text>
+        <text wx:if="{{item.isProtectedAdmin}}" class="helper-note">最后一个可用管理员账号</text>
+      </view>
+
+      <view class="card-line">
+        <text>学号/工号</text>
+        <text class="meta-text">{{item.studentNo}}</text>
+      </view>
+      <view class="card-line">
+        <text>联系方式</text>
+        <text class="meta-text">{{item.phone}}</text>
+      </view>
+      <view class="card-line info-line">
+        <text>权限说明</text>
+        <text class="meta-text info-text">{{item.permissionsText}}</text>
+      </view>
+
+      <view wx:if="{{item.auditRemark}}" class="record-note">
+        审核说明：{{item.auditRemark}}
+      </view>
+      <view wx:if="{{item.blacklisted && item.blacklistReason}}" class="record-note danger-note">
+        黑名单原因：{{item.blacklistReason}}
+      </view>
+
+      <view wx:if="{{item.reviewedAt}}" class="card-line">
+        <text>最近审核</text>
+        <text class="meta-text">{{item.reviewedByName}} · {{item.reviewedAt}}</text>
+      </view>
+      <view wx:if="{{item.roleUpdatedAt}}" class="card-line">
+        <text>权限调整</text>
+        <text class="meta-text">{{item.roleUpdatedByName}} · {{item.roleUpdatedAt}}</text>
+      </view>
+      <view wx:if="{{item.blacklistAt}}" class="card-line">
+        <text>黑名单时间</text>
+        <text class="meta-text">{{item.blacklistByName}} · {{item.blacklistAt}}</text>
+      </view>
+
+      <view wx:if="{{item.canReview}}" class="btn-row">
+        <button class="btn-primary action-btn" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="approveUser">通过审核</button>
+        <button class="btn-light action-btn" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="rejectUser">驳回审核</button>
+      </view>
+      <view class="btn-row">
+        <button class="btn-secondary action-btn" data-id="{{item.id}}" data-role="{{item.role}}" data-name="{{item.name}}" bindtap="assignRole" disabled="{{!item.canAssignRole}}">权限分配</button>
+        <button class="btn-light action-btn" data-id="{{item.id}}" data-name="{{item.name}}" data-blacklisted="{{item.blacklisted}}" bindtap="toggleBlacklist" disabled="{{!item.canToggleBlacklist}}">
+          {{item.blacklisted ? '解除黑名单' : '加入黑名单'}}
+        </button>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="empty-card">当前筛选条件下暂无用户记录。</view>
+</view>

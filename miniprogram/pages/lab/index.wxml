@@ -1,0 +1,70 @@
+<view class="page-shell">
+  <view class="hero-card">
+    <text class="hero-title">实验室资源总览</text>
+    <text class="hero-subtitle">在线查看空闲状态、容纳人数与预约情况，减少线下沟通成本。</text>
+  </view>
+
+  <view class="form-card lab-filter-card">
+    <view class="form-item">
+      <text class="form-label">搜索实验室</text>
+      <input
+        class="form-input"
+        value="{{keyword}}"
+        bindinput="handleInput"
+        confirm-type="search"
+        bindconfirm="handleSearch"
+        placeholder="名称 / 楼栋 / 房间号"
+      />
+    </view>
+    <view class="form-item">
+      <text class="form-label">状态筛选</text>
+      <view class="capsule-row">
+        <view
+          wx:for="{{statusTabs}}"
+          wx:key="key"
+          class="capsule {{activeStatus === item.key ? 'active' : ''}}"
+          data-status="{{item.key}}"
+          bindtap="changeStatus"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <block wx:if="{{labs.length}}">
+    <view wx:for="{{labs}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.building}} {{item.roomNumber}} · 容纳 {{item.capacity}} 人</text>
+        </view>
+        <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+      </view>
+      <text class="card-subtitle">{{item.description}}</text>
+      <view class="card-line">
+        <text>开放时间</text>
+        <text class="meta-text">{{item.openTime}}</text>
+      </view>
+      <view class="reservation-overview">
+        <view class="overview-item">
+          <text class="overview-label">当前预约</text>
+          <text class="overview-value">{{item.currentReservationText}}</text>
+        </view>
+        <view class="overview-item">
+          <text class="overview-label">预约概况</text>
+          <text class="overview-value">{{item.reservationSummaryText}}</text>
+        </view>
+      </view>
+      <view class="card-line card-line-stack">
+        <text>最近安排</text>
+        <text class="meta-text stack-text">{{item.nextReservationText}}</text>
+      </view>
+      <view class="btn-row">
+        <button class="btn-secondary" data-id="{{item.id}}" bindtap="openDetail">查看详情</button>
+        <button class="btn-primary" data-id="{{item.id}}" bindtap="createReservation" disabled="{{item.status === 'maintenance'}}">立即预约</button>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">没有找到符合条件的实验室，试试更换关键词或筛选条件。</view>
+</view>

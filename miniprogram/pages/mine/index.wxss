@@ -1,0 +1,20 @@
+.mine-stat {
+  padding: 28rpx;
+}
+
+.mine-stat-value {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #17325f;
+}
+
+.mine-stat-label {
+  display: block;
+  margin-top: 12rpx;
+  color: #6d7d96;
+}
+
+.logout-row {
+  margin-top: 30rpx;
+}

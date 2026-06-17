@@ -1,0 +1,84 @@
+<view class="page-shell without-tabbar" wx:if="{{detail}}">
+  <view class="hero-card">
+    <text class="hero-title">{{detail.name}}</text>
+    <text class="hero-subtitle">{{detail.building}} {{detail.roomNumber}} · 容纳 {{detail.capacity}} 人</text>
+  </view>
+
+  <view class="section-card cover-card">
+    <view class="lab-cover cover-surface">
+      <text class="cover-badge">实验室图片</text>
+      <text class="cover-name">{{detail.name}}</text>
+      <text class="cover-subtitle">{{detail.building}} {{detail.roomNumber}}</text>
+    </view>
+  </view>
+
+  <view class="section-card detail-card">
+    <view class="section-header compact">
+      <text class="section-title">基本信息</text>
+      <text class="status-tag {{detail.statusClass}}">{{detail.statusText}}</text>
+    </view>
+    <text class="card-subtitle">{{detail.description}}</text>
+    <view class="card-line card-line-stack">
+      <text>开放时间</text>
+      <text class="meta-text stack-text">{{detail.openTime}}</text>
+    </view>
+    <view class="card-line card-line-stack">
+      <text>使用说明</text>
+      <text class="meta-text stack-text">{{detail.guide}}</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">当前预约情况</text>
+    <text class="section-meta">实时汇总</text>
+  </view>
+  <view class="summary-grid">
+    <view class="summary-card">
+      <text class="summary-value">{{detail.todayReservationCount}}</text>
+      <text class="summary-label">今日预约</text>
+    </view>
+    <view class="summary-card">
+      <text class="summary-value">{{detail.pendingReservationCount}}</text>
+      <text class="summary-label">待审核</text>
+    </view>
+    <view class="summary-card">
+      <text class="summary-value">{{detail.approvedReservationCount}}</text>
+      <text class="summary-label">已生效</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">设备信息</text>
+    <text class="section-meta">{{detail.equipment.length}} 项</text>
+  </view>
+  <view class="section-card detail-card">
+    <view class="capsule-row">
+      <text wx:for="{{detail.equipment}}" wx:key="*this" class="capsule">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">近期预约</text>
+    <text class="section-meta">最近 4 条</text>
+  </view>
+  <block wx:if="{{detail.schedules.length}}">
+    <view wx:for="{{detail.schedules}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.projectName}}</text>
+          <text class="card-subtitle">{{item.applicantName}}</text>
+        </view>
+        <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+      </view>
+      <view class="card-line">
+        <text>{{item.date}} {{item.timeSlot}}</text>
+        <text>{{item.headCount}} 人</text>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">近期暂无预约记录，现在就可以发起预约。</view>
+
+  <view class="btn-row sticky-actions">
+    <button class="btn-primary" bindtap="createReservation" disabled="{{detail.status === 'maintenance'}}">预约这个实验室</button>
+  </view>
+</view>

@@ -70,6 +70,7 @@ service.interceptors.response.use(
   },
   async (error: AxiosError<ApiResponse | Blob>) => {
     NProgress.done()
+    const showErrorMsg = (error.config as RequestOptions | undefined)?.showErrorMsg !== false
 
     if (error.response) {
       const { status, data } = error.response
@@ -89,30 +90,42 @@ service.interceptors.response.use(
 
       switch (status) {
         case 401:
-          ElMessageBox.confirm('登录状态已过期，请重新登录', '系统提示', {
-            confirmButtonText: '重新登录',
-            cancelButtonText: '取消',
-            type: 'warning',
-          }).then(() => {
-            const userStore = useUserStore()
-            userStore.logout()
-            router.push('/login')
-          })
+          if (showErrorMsg) {
+            ElMessageBox.confirm('登录状态已过期，请重新登录', '系统提示', {
+              confirmButtonText: '重新登录',
+              cancelButtonText: '取消',
+              type: 'warning',
+            }).then(() => {
+              const userStore = useUserStore()
+              userStore.logout()
+              router.push('/login')
+            })
+          }
           break
         case 403:
-          ElMessage.error('没有操作权限')
+          if (showErrorMsg) {
+            ElMessage.error('没有操作权限')
+          }
           break
         case 404:
-          ElMessage.error('请求资源不存在')
+          if (showErrorMsg) {
+            ElMessage.error('请求资源不存在')
+          }
           break
         case 500:
-          ElMessage.error(errorMessage || '服务器内部错误')
+          if (showErrorMsg) {
+            ElMessage.error(errorMessage || '服务器内部错误')
+          }
           break
         default:
-          ElMessage.error(errorMessage)
+          if (showErrorMsg) {
+            ElMessage.error(errorMessage)
+          }
       }
     } else {
-      ElMessage.error('网络连接异常')
+      if (showErrorMsg) {
+        ElMessage.error('网络连接异常')
+      }
     }
 
     return Promise.reject(error)

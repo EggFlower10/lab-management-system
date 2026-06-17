@@ -145,7 +145,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Download, Plus, Refresh, Search } from '@element-plus/icons-vue'
 import { del, get, post, put } from '@/utils/request'
-import { downloadDocx } from '@/utils/export'
+import { downloadExcel } from '@/utils/export'
 
 interface TrainingPlanItem {
   id: number
@@ -340,7 +340,7 @@ const handleCurrentChange = () => {
 
 const handleExport = async () => {
   try {
-    await downloadDocx('/export/training-plan', 'training-plan.docx')
+    await downloadExcel('/training-plans/export', 'training-plan.xlsx')
     ElMessage.success('导出成功')
   } catch (error) {
     ElMessage.error('导出失败')

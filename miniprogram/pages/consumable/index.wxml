@@ -1,0 +1,138 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">耗材库存与申领</text>
+    <text class="hero-subtitle">{{heroSubtitle}}</text>
+  </view>
+
+  <view class="grid-three stat-grid">
+    <view class="stat-card">
+      <text class="stat-label">耗材种类</text>
+      <text class="stat-value">{{totalTypes}}</text>
+      <text class="stat-intro">按分类管理库存</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-label">申请记录</text>
+      <text class="stat-value">{{requestCount}}</text>
+      <text class="stat-intro">{{isAdmin ? '查看全部申领' : '查看我的申领'}}</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-label">待处理</text>
+      <text class="stat-value">{{pendingCount}}</text>
+      <text class="stat-intro">{{isAdmin ? '待审批申请' : '等待审批结果'}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{lowStockCount}}" class="notice-card warning-card">
+    <view class="notice-head">
+      <text class="notice-title">库存预警</text>
+      <text class="status-tag status-maintenance">{{lowStockCount}} 项</text>
+    </view>
+    <text class="notice-text">{{lowStockPreview}}</text>
+    <text class="tiny notice-hint">库存低于预警值后，系统会自动提醒管理员及时补货。</text>
+  </view>
+
+  <view wx:if="{{isAdmin}}" class="notice-card admin-card">
+    <view class="notice-head">
+      <text class="notice-title">审批流程</text>
+      <text class="status-tag status-occupied">管理员入口</text>
+    </view>
+    <text class="notice-text">学生或教师提交耗材申请后，由管理员审批；审批通过后自动扣减库存并保留申请记录。</text>
+    <view class="btn-row">
+      <button class="btn-secondary" bindtap="openApproval">进入耗材审批</button>
+      <button class="btn-primary" bindtap="openManage">维护库存</button>
+    </view>
+  </view>
+
+  <view class="section-card process-card">
+    <view class="section-header compact-header">
+      <text class="section-title">申领说明</text>
+      <text class="section-meta">三步完成</text>
+    </view>
+    <view class="process-list">
+      <view class="process-item">
+        <text class="process-step">01</text>
+        <text class="process-name">查看库存</text>
+        <text class="process-desc">按名称、分类和库存快速确认可申领耗材。</text>
+      </view>
+      <view class="process-item">
+        <text class="process-step">02</text>
+        <text class="process-name">填写申请</text>
+        <text class="process-desc">录入申请数量和使用用途，提交后自动留痕。</text>
+      </view>
+      <view class="process-item">
+        <text class="process-step">03</text>
+        <text class="process-name">审批发放</text>
+        <text class="process-desc">管理员审批后更新库存，低库存自动进入预警。</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">耗材列表</text>
+    <text class="section-meta">{{filteredList.length}} / {{totalTypes}} 项</text>
+  </view>
+  <view class="capsule-row">
+    <view
+      wx:for="{{categories}}"
+      wx:key="key"
+      class="capsule {{activeCategory === item.key ? 'active' : ''}}"
+      data-category="{{item.key}}"
+      bindtap="changeCategory"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <block wx:if="{{filteredList.length}}">
+    <view wx:for="{{filteredList}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view class="title-wrap">
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.category}} · 单位 {{item.unit}}</text>
+        </view>
+        <text class="status-tag {{item.isLowStock ? 'status-maintenance' : 'status-approved'}}">{{item.stock}}{{item.unit}}</text>
+      </view>
+      <view class="meta-grid">
+        <view class="meta-block">
+          <text class="meta-label">当前库存</text>
+          <text class="meta-value">{{item.stock}}{{item.unit}}</text>
+        </view>
+        <view class="meta-block">
+          <text class="meta-label">预警阈值</text>
+          <text class="meta-value">{{item.warningValue}}{{item.unit}}</text>
+        </view>
+      </view>
+      <view wx:if="{{item.isLowStock}}" class="inline-alert">当前库存已低于预警线，系统会自动提醒管理员补货。</view>
+      <view class="btn-row">
+        <button class="btn-primary" data-id="{{item.id}}" disabled="{{item.outOfStock}}" bindtap="applyItem">{{item.outOfStock ? '库存不足' : '申请领用'}}</button>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">当前分类下暂无耗材信息。</view>
+
+  <view class="section-header">
+    <text class="section-title">{{requestSectionTitle}}</text>
+    <text class="section-meta">最近 {{requestList.length}} 条</text>
+  </view>
+  <block wx:if="{{requestList.length}}">
+    <view wx:for="{{requestList}}" wx:key="id" wx:for-item="request" class="list-card request-card">
+      <view class="card-title-row">
+        <view class="title-wrap">
+          <text class="card-title">{{request.consumableName}}</text>
+          <text class="card-subtitle">{{request.createdAt}}</text>
+        </view>
+        <text class="status-tag {{request.statusClass}}">{{request.statusText}}</text>
+      </view>
+      <view class="card-line">
+        <text>申请数量</text>
+        <text class="meta-text">{{request.quantity}}{{request.unit}}</text>
+      </view>
+      <view wx:if="{{isAdmin}}" class="card-line">
+        <text>申请人</text>
+        <text class="meta-text">{{request.applicantName}}</text>
+      </view>
+      <text class="card-subtitle request-purpose">{{request.purpose}}</text>
+    </view>
+  </block>
+  <view wx:else class="empty-card">还没有耗材申请记录，先从上面的列表里选择一项提交申请吧。</view>
+</view>

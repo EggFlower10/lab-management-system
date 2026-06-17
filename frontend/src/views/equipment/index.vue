@@ -309,8 +309,8 @@ const loadData = async () => {
       status: searchForm.status
     }
     const res = await get('/equipment', params)
-    tableData.value = res || []
-    pagination.total = res?.length || 0
+    tableData.value = res?.data || []
+    pagination.total = res?.total || 0
   } catch (error) {
     console.error('加载设备列表失败:', error)
     ElMessage.error('加载设备列表失败')

@@ -162,10 +162,9 @@
           <el-table-column prop="time_slot_start" label="节次" width="100" sortable="custom" />
           <el-table-column prop="source_type" label="来源" width="110" :formatter="formatSourceType" />
           <el-table-column prop="status" label="状态" width="80" :formatter="formatStatus" />
-          <el-table-column label="操作" width="150" fixed="right">
+          <el-table-column label="操作" width="120" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="handleView(row)">查看</el-button>
-              <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
               <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
             </template>
           </el-table-column>
@@ -217,7 +216,7 @@ import * as XLSX from 'xlsx'
 const viewMode = ref<'table' | 'list'>('table')
 const searchForm = reactive({
   semesterId: 1,
-  weekNo: 1,
+  weekNo: 1 as number | null,
   buildingId: null as number | null,
   roomId: null as number | null,
   majorId: null as number | null,
@@ -460,7 +459,7 @@ function getScheduleItems(timeSlot: string, weekDay: number) {
   return scheduleList.value.filter(item => {
     if (item.time_slot_start !== timeSlot) return false
     if (parseInt(item.week_day) !== weekDay) return false
-    if (searchForm.weekNo && parseInt(item.week_no) !== parseInt(searchForm.weekNo)) return false
+    if (searchForm.weekNo && parseInt(item.week_no) !== searchForm.weekNo) return false
     return true
   })
 }
@@ -606,7 +605,8 @@ function formatStatus(_row: any, _column: any, cellValue: number) {
   return cellValue === 1 ? '正常' : '已取消'
 }
 
-function formatWeekType(weekType: any) {
+function formatWeekType(_row: any, _column?: any, cellValue?: any) {
+  const weekType = cellValue === undefined ? _row : cellValue
   if (!weekType) return '全部周'
   const typeMap: Record<string, string> = {
     all: '全部周',

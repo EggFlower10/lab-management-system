@@ -1,0 +1,42 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">实验成绩录入</text>
+    <text class="hero-subtitle">{{course ? course.name : courseName}} · 结合签到和报告完成情况录入实验成绩。</text>
+  </view>
+
+  <view wx:if="{{summary && summary.length}}" class="grid-two summary-grid">
+    <view wx:for="{{summary}}" wx:key="label" class="stat-card summary-card">
+      <text class="summary-value">{{item.value}}</text>
+      <text class="summary-label">{{item.label}}</text>
+      <text class="summary-intro">{{item.intro}}</text>
+    </view>
+  </view>
+
+  <block wx:if="{{students.length}}">
+    <view wx:for="{{students}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.studentNo}}</text>
+        </view>
+        <text class="capsule">{{item.attendanceStatus}}</text>
+      </view>
+      <view class="card-line">
+        <text>实验报告</text>
+        <text class="meta-text">{{item.reportSubmitted ? '已提交' : '待提交'}}</text>
+      </view>
+      <view class="form-item grade-form-item">
+        <text class="form-label">成绩</text>
+        <input class="form-input" type="number" placeholder="请输入 0-100 分" data-index="{{index}}" bindinput="handleScoreInput" value="{{item.score}}" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">评语</text>
+        <textarea class="form-textarea" placeholder="填写本次实验表现与建议" data-index="{{index}}" bindinput="handleCommentInput" value="{{item.comment}}" />
+      </view>
+    </view>
+    <view class="btn-row">
+      <button class="btn-primary" bindtap="submit" loading="{{submitting}}">保存成绩</button>
+    </view>
+  </block>
+  <view wx:else class="empty-card">当前课程暂无可录入成绩的学生数据。</view>
+</view>

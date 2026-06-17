@@ -333,7 +333,7 @@
 import { ref, reactive, onMounted, nextTick, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Calendar, Clock, OfficeBuilding, CircleCheck } from '@element-plus/icons-vue'
-import { get, post } from '@/utils/request'
+import { get } from '@/utils/request'
 import * as echarts from 'echarts'
 import * as XLSX from 'xlsx'
 
@@ -739,7 +739,7 @@ function updateRegistrationChart() {
     series: [{
       type: 'bar',
       barWidth: '50%',
-      data: rates.map((rate, index) => ({
+      data: rates.map((rate) => ({
         value: rate,
         itemStyle: { 
           color: rate >= 85 ? '#67c23a' : rate >= 75 ? '#e6a23c' : '#f56c6c',

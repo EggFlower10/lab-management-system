@@ -1,8 +1,6 @@
 const http = require('http');
 
-console.log('=== 测试登录API ===');
-
-const data = JSON.stringify({
+const loginData = JSON.stringify({
   username: 'admin',
   password: '123456'
 });
@@ -14,41 +12,24 @@ const options = {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Content-Length': Buffer.byteLength(data)
+    'Content-Length': Buffer.byteLength(loginData)
   }
 };
 
 const req = http.request(options, (res) => {
-  let responseData = '';
-
+  let body = '';
   res.on('data', (chunk) => {
-    responseData += chunk;
+    body += chunk;
   });
-
   res.on('end', () => {
     console.log('状态码:', res.statusCode);
-    console.log('响应:', responseData);
-    try {
-      const parsed = JSON.parse(responseData);
-      console.log('');
-      console.log('解析结果:');
-      if (parsed.code === 200) {
-        console.log('  ✓ 登录成功');
-        console.log('  Token:', parsed.data.token ? '已获取' : '无');
-        console.log('  用户:', parsed.data.user);
-      } else {
-        console.log('  ✗ 登录失败:', parsed.message);
-      }
-    } catch (e) {
-      console.error('解析失败:', e);
-      console.log('原始响应:', responseData);
-    }
+    console.log('响应:', body);
   });
 });
 
-req.on('error', (error) => {
-  console.error('请求失败:', error.message);
+req.on('error', (e) => {
+  console.error('请求错误:', e);
 });
 
-req.write(data);
+req.write(loginData);
 req.end();

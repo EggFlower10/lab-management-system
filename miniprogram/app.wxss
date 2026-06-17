@@ -1,0 +1,293 @@
+page {
+  min-height: 100%;
+  background: #f4f7fb;
+  color: #1f2a44;
+  font-size: 28rpx;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 32rpx 28rpx calc(48rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.page-shell.without-tabbar {
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+.hero-card,
+.section-card,
+.form-card,
+.list-card,
+.stat-card,
+.notice-card {
+  background: #ffffff;
+  border-radius: 28rpx;
+  box-shadow: 0 18rpx 48rpx rgba(15, 52, 115, 0.08);
+}
+
+.hero-card {
+  padding: 32rpx;
+  background: linear-gradient(135deg, #17408b 0%, #2a74d7 60%, #65b8ff 100%);
+  color: #ffffff;
+}
+
+.hero-title {
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.hero-subtitle {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  opacity: 0.86;
+}
+
+.section-header {
+  margin: 36rpx 0 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #183153;
+}
+
+.section-meta {
+  font-size: 24rpx;
+  color: #6f7f98;
+}
+
+.capsule-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.capsule {
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background: #e8eef8;
+  color: #31548c;
+  font-size: 24rpx;
+}
+
+.capsule.active {
+  background: #1c4fa1;
+  color: #ffffff;
+}
+
+.grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20rpx;
+}
+
+.grid-three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20rpx;
+}
+
+.action-tile {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  box-shadow: 0 12rpx 30rpx rgba(16, 49, 104, 0.06);
+}
+
+.action-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1f2a44;
+}
+
+.action-desc {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #7b8aa3;
+  line-height: 1.5;
+}
+
+.list-card {
+  padding: 28rpx;
+  margin-top: 20rpx;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1e2d4d;
+}
+
+.card-subtitle {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #6f7f98;
+  line-height: 1.6;
+}
+
+.card-line {
+  margin-top: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: #4c5d7a;
+}
+
+.meta-text {
+  font-size: 24rpx;
+  color: #6f7f98;
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 116rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.status-available,
+.status-approved,
+.status-completed {
+  background: rgba(44, 168, 112, 0.12);
+  color: #218457;
+}
+
+.status-pending,
+.status-borrowed {
+  background: rgba(248, 166, 43, 0.14);
+  color: #b56d00;
+}
+
+.status-occupied,
+.status-in-use {
+  background: rgba(59, 118, 219, 0.14);
+  color: #245ab4;
+}
+
+.status-maintenance,
+.status-cancelled,
+.status-rejected,
+.status-overdue {
+  background: rgba(219, 72, 72, 0.12);
+  color: #b73131;
+}
+
+.btn-row {
+  margin-top: 24rpx;
+  display: flex;
+  gap: 16rpx;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-light {
+  flex: 1;
+  height: 84rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #18489b 0%, #2a78de 100%);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #eef4ff;
+  color: #234e98;
+  border: 1rpx solid #d8e5ff;
+}
+
+.btn-light {
+  background: #ffffff;
+  color: #31548c;
+  border: 1rpx solid #d6dfef;
+}
+
+.form-card {
+  padding: 28rpx;
+}
+
+.form-item + .form-item {
+  margin-top: 24rpx;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 16rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.form-input,
+.form-picker,
+.form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 20rpx;
+  background: #f6f8fc;
+  color: #1f2a44;
+  font-size: 28rpx;
+}
+
+input.form-input {
+  display: block;
+  height: 88rpx;
+  padding: 0 24rpx;
+  line-height: 88rpx;
+}
+
+.form-picker {
+  min-height: 88rpx;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+}
+
+textarea.form-textarea {
+  display: block;
+  min-height: 180rpx;
+  padding: 22rpx 24rpx;
+  line-height: 1.6;
+}
+
+.empty-card {
+  padding: 48rpx 28rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  text-align: center;
+  color: #7c8ba3;
+  font-size: 26rpx;
+  box-shadow: 0 14rpx 32rpx rgba(16, 49, 104, 0.06);
+}
+
+.link-text {
+  color: #2a74d7;
+}
+
+.tiny {
+  font-size: 22rpx;
+}

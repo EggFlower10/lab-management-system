@@ -17,8 +17,8 @@
           <el-button @click="handleRefresh">
             <el-icon><Refresh /></el-icon>刷新
           </el-button>
-          <el-button @click="handleExport">
-            <el-icon><Setting /></el-icon>导出
+          <el-button type="success" @click="handleExport">
+            <el-icon><Download /></el-icon>导出
           </el-button>
         </div>
       </div>
@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
-import { Plus, ArrowDown, ArrowUp, Refresh, Setting } from '@element-plus/icons-vue'
+import { Plus, ArrowDown, ArrowUp, Refresh, Setting, Download } from '@element-plus/icons-vue'
 import { get, post, put, del } from '@/utils/request'
 
 const loading = ref(false)
@@ -264,8 +264,24 @@ function handleRefresh() {
   fetchData()
 }
 
-function handleExport() {
-  ElMessage.info('导出功能开发中')
+async function handleExport() {
+  try {
+    const response = await get('/menus/export', null, { responseType: 'blob' })
+    const url = window.URL.createObjectURL(new Blob([response], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'menu-list.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败')
+  }
 }
 
 function handleAdd(parentId: number) {

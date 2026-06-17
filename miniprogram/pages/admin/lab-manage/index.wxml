@@ -1,0 +1,84 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">实验室管理</text>
+    <text class="hero-subtitle">维护实验室基础信息、开放状态与使用提示。</text>
+  </view>
+
+  <view class="form-card">
+    <view class="section-header compact-header">
+      <text class="section-title">{{form.id ? '编辑实验室' : '新增实验室'}}</text>
+      <text wx:if="{{form.id}}" class="link-text" bindtap="resetForm">取消编辑</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">实验室名称</text>
+      <input class="form-input" placeholder="例如：人工智能实验室" data-field="name" bindinput="handleInput" value="{{form.name}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">所属楼宇</text>
+      <input class="form-input" placeholder="例如：信息楼 A 座" data-field="building" bindinput="handleInput" value="{{form.building}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">房间号</text>
+      <input class="form-input" placeholder="例如：401" data-field="roomNumber" bindinput="handleInput" value="{{form.roomNumber}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">容量</text>
+      <input class="form-input" type="number" placeholder="请输入容纳人数" data-field="capacity" bindinput="handleInput" value="{{form.capacity}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">开放时间</text>
+      <input class="form-input" placeholder="例如：周一至周日 08:00-21:00" data-field="openTime" bindinput="handleInput" value="{{form.openTime}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">实验室状态</text>
+      <view class="capsule-row">
+        <view
+          wx:for="{{statusOptions}}"
+          wx:key="key"
+          class="capsule {{form.status === item.key ? 'active' : ''}}"
+          data-status="{{item.key}}"
+          bindtap="selectStatus"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </view>
+    <view class="form-item">
+      <text class="form-label">简介</text>
+      <textarea class="form-textarea" placeholder="填写实验室特点与适用场景" data-field="description" bindinput="handleInput" value="{{form.description}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">使用提示</text>
+      <textarea class="form-textarea" placeholder="填写预约或使用注意事项" data-field="guide" bindinput="handleInput" value="{{form.guide}}" />
+    </view>
+    <view class="btn-row">
+      <button class="btn-primary" bindtap="submit">{{form.id ? '保存修改' : '新增实验室'}}</button>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">实验室列表</text>
+    <text class="section-meta">{{list.length}} 间</text>
+  </view>
+  <view wx:for="{{list}}" wx:key="id" class="list-card">
+    <view class="card-title-row">
+      <view>
+        <text class="card-title">{{item.name}}</text>
+        <text class="card-subtitle">{{item.building}} {{item.roomNumber}}</text>
+      </view>
+      <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+    </view>
+    <view class="card-line">
+      <text>容纳人数</text>
+      <text class="meta-text">{{item.capacity}} 人</text>
+    </view>
+    <view class="card-line">
+      <text>开放时间</text>
+      <text class="meta-text">{{item.openTime}}</text>
+    </view>
+    <view class="btn-row">
+      <button class="btn-secondary" data-id="{{item.id}}" bindtap="editItem">编辑</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,22 @@
+.hero-title,
+.hero-subtitle {
+  display: block;
+}
+
+.compact-header {
+  margin-top: 0;
+}
+
+.status-note {
+  display: block;
+  margin-top: 12rpx;
+  color: #7b8aa3;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.btn-danger {
+  color: #b73131;
+  border-color: #f0cccc;
+  background: #fff5f5;
+}

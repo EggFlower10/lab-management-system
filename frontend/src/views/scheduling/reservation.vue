@@ -772,16 +772,16 @@ function resetForm() {
   selectedRoomSchedule.value = []
 }
 
-function formatDate(row: any, column: any, cellValue: any) {
+function formatDate(_row: any, _column: any, cellValue: any) {
   return cellValue || '-'
 }
 
-function formatWeekDay(row: any, column: any, cellValue: any) {
+function formatWeekDay(_row: any, _column: any, cellValue: any) {
   const days = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日']
   return days[cellValue] || '-'
 }
 
-function formatApprovalStatus(row: any, column: any, cellValue: any) {
+function formatApprovalStatus(_row: any, _column: any, cellValue: any) {
   const statusMap: Record<string, string> = {
     pending: '待审批',
     approved: '已通过',

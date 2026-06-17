@@ -16,7 +16,7 @@
               <el-icon><Plus /></el-icon>新增项目
             </el-button>
             <el-button type="warning" @click="handleExport">
-              <el-icon><Download /></el-icon>导出项目库
+              <el-icon><Download /></el-icon>导出Excel
             </el-button>
           </div>
         </div>
@@ -115,7 +115,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Download, Plus, Refresh, Search } from '@element-plus/icons-vue'
 import { del, get, post, put } from '@/utils/request'
-import { downloadDocx } from '@/utils/export'
+import { downloadExcel } from '@/utils/export'
 
 interface ProjectItem {
   id: number
@@ -301,7 +301,7 @@ const handleCurrentChange = () => {
 
 const handleExport = async () => {
   try {
-    await downloadDocx('/export/project-library', 'experiment-project-library.docx')
+    await downloadExcel('/experiment-projects/export', 'experiment-projects.xlsx')
     ElMessage.success('导出成功')
   } catch (error) {
     ElMessage.error('导出失败')

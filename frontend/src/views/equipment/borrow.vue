@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <el-card class="table-card">
+服务器运行在 http://localhost:7002    <el-card class="table-card">
       <div class="page-title">设备借还管理</div>
 
       <div class="search-row">
@@ -31,6 +31,11 @@
         <el-button type="primary" @click="loadBorrowRecords">
           <el-icon><List /></el-icon>查看借还记录
         </el-button>
+        <el-badge :value="pendingApprovalCount" :hidden="pendingApprovalCount === 0" type="danger">
+          <el-button type="warning" @click="openApprovalDialog">
+            <el-icon><CircleCheck /></el-icon>设备审批
+          </el-button>
+        </el-badge>
       </div>
 
       <el-table :data="tableData" v-loading="loading" border stripe>
@@ -222,52 +227,88 @@
     </el-dialog>
 
     <!-- 借还记录对话框 -->
-    <el-dialog title="借还记录" v-model="recordDialogVisible" width="1000px">
-      <div class="record-search">
-        <el-select v-model="recordSearchForm.status" placeholder="记录状态" clearable class="search-select">
-          <el-option label="全部" :value="null" />
-          <el-option label="待审批" value="pending" />
-          <el-option label="待导师审批" value="pending_teacher" />
-          <el-option label="待管理员审批" value="pending_admin" />
-          <el-option label="已审批" value="approved" />
-          <el-option label="已拒绝" value="rejected" />
-          <el-option label="已借出" value="borrowed" />
-          <el-option label="已归还" value="returned" />
-          <el-option label="逾期" value="overdue" />
-        </el-select>
-        <el-button type="primary" @click="loadBorrowRecords">查询</el-button>
-      </div>
-      <el-table :data="borrowRecords" border stripe max-height="500">
-        <el-table-column prop="borrow_code" label="申请编号" width="120" />
-        <el-table-column prop="equipment_name" label="设备名称" width="150" />
-        <el-table-column prop="applicant_name" label="借用人" width="120" />
-        <el-table-column label="借用日期" width="180">
-          <template #default="{ row }">
-            {{ formatDate(row.borrow_date) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="预计归还" width="180">
-          <template #default="{ row }">
-            {{ formatDate(row.expect_return_date) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="140">
-          <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <template v-if="row.status === 'pending_teacher'">
-              <el-button type="success" size="small" @click="handleTeacherApprove(row)">导师审批</el-button>
-            </template>
-            <template v-else-if="row.status === 'pending_admin'">
-              <el-button type="success" size="small" @click="handleAdminApprove(row)">管理员审批</el-button>
-            </template>
-            <el-button type="primary" size="small" @click="handleRecordDetail(row)">详情</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+    <el-dialog title="借还记录" v-model="recordDialogVisible" width="1200px">
+      <el-tabs v-model="recordTabActive">
+        <el-tab-pane label="借还记录" name="borrow">
+          <div class="record-search">
+            <el-select v-model="recordSearchForm.status" placeholder="记录状态" clearable class="search-select">
+              <el-option label="全部" :value="null" />
+              <el-option label="待审批" value="pending" />
+              <el-option label="待导师审批" value="pending_teacher" />
+              <el-option label="待管理员审批" value="pending_admin" />
+              <el-option label="已审批" value="approved" />
+              <el-option label="已拒绝" value="rejected" />
+              <el-option label="已借出" value="borrowed" />
+              <el-option label="已归还" value="returned" />
+              <el-option label="逾期" value="overdue" />
+            </el-select>
+            <el-button type="primary" @click="loadBorrowRecords">查询</el-button>
+          </div>
+          <el-table :data="borrowRecords" border stripe max-height="500">
+            <el-table-column prop="borrow_code" label="申请编号" width="120" />
+            <el-table-column prop="equipment_name" label="设备名称" width="150" />
+            <el-table-column prop="applicant_name" label="借用人" width="120" />
+            <el-table-column label="借用日期" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.borrow_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="预计归还" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.expect_return_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" width="140">
+              <template #default="{ row }">
+                <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="180" fixed="right">
+              <template #default="{ row }">
+                <el-button type="primary" size="small" @click="handleRecordDetail(row)">详情</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+        
+        <el-tab-pane label="续借申请" name="renew">
+          <div class="record-search">
+            <el-select v-model="renewSearchForm.status" placeholder="申请状态" clearable class="search-select">
+              <el-option label="全部" :value="null" />
+              <el-option label="待审批" value="pending" />
+              <el-option label="已通过" value="approved" />
+              <el-option label="已拒绝" value="rejected" />
+            </el-select>
+            <el-button type="primary" @click="loadRenewRecords">查询</el-button>
+          </div>
+          <el-table :data="renewRecords" border stripe max-height="500">
+            <el-table-column prop="renew_code" label="申请编号" width="120" />
+            <el-table-column prop="equipment_name" label="设备名称" width="150" />
+            <el-table-column prop="applicant_name" label="申请人" width="120" />
+            <el-table-column label="原归还日期" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.original_return_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="新归还日期" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.new_return_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="renew_reason" label="续借原因" width="200" />
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="getRenewStatusType(row.status)">{{ getRenewStatusText(row.status) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="180" fixed="right">
+              <template #default="{ row }">
+                <el-button type="primary" size="small" @click="handleRenewDetail(row)">详情</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
       <template #footer>
         <el-button @click="recordDialogVisible = false">关闭</el-button>
       </template>
@@ -303,6 +344,65 @@
       <template #footer>
         <el-button @click="approveDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleSubmitApprove">确认审批</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 续借审批对话框 -->
+    <el-dialog title="续借审批" v-model="renewApproveDialogVisible" width="550px">
+      <el-form :model="renewApproveForm" ref="renewApproveFormRef" label-width="120px">
+        <el-form-item label="申请编号">
+          <el-input v-model="renewApproveForm.renew_code" disabled />
+        </el-form-item>
+        <el-form-item label="设备名称">
+          <el-input v-model="renewApproveForm.equipment_name" disabled />
+        </el-form-item>
+        <el-form-item label="申请人">
+          <el-input v-model="renewApproveForm.applicant_name" disabled />
+        </el-form-item>
+        <el-form-item label="原归还日期">
+          <el-input :value="formatDate(renewApproveForm.original_return_date)" disabled />
+        </el-form-item>
+        <el-form-item label="新归还日期">
+          <el-input :value="formatDate(renewApproveForm.new_return_date)" disabled />
+        </el-form-item>
+        <el-form-item label="续借原因">
+          <el-input v-model="renewApproveForm.renew_reason" type="textarea" :rows="2" disabled />
+        </el-form-item>
+        <el-form-item label="审批结果" prop="approval_status">
+          <el-radio-group v-model="renewApproveForm.approval_status">
+            <el-radio label="approved">通过</el-radio>
+            <el-radio label="rejected">拒绝</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="审批意见">
+          <el-input v-model="renewApproveForm.approval_comment" type="textarea" :rows="3" placeholder="请输入审批意见" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="renewApproveDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitRenewApprove">确认审批</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 续借详情对话框 -->
+    <el-dialog title="续借申请详情" v-model="renewDetailDialogVisible" width="600px">
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="申请编号">{{ currentRenewRecord?.renew_code }}</el-descriptions-item>
+        <el-descriptions-item label="设备名称">{{ currentRenewRecord?.equipment_name }}</el-descriptions-item>
+        <el-descriptions-item label="资产编号">{{ currentRenewRecord?.asset_code }}</el-descriptions-item>
+        <el-descriptions-item label="申请人">{{ currentRenewRecord?.applicant_name }}</el-descriptions-item>
+        <el-descriptions-item label="原归还日期">{{ formatDate(currentRenewRecord?.original_return_date) }}</el-descriptions-item>
+        <el-descriptions-item label="新归还日期">{{ formatDate(currentRenewRecord?.new_return_date) }}</el-descriptions-item>
+        <el-descriptions-item label="续借原因" :span="2">{{ currentRenewRecord?.renew_reason }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getRenewStatusType(currentRenewRecord?.status)">{{ getRenewStatusText(currentRenewRecord?.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="审批人">{{ currentRenewRecord?.approval_user_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="审批时间">{{ formatDate(currentRenewRecord?.approval_time) }}</el-descriptions-item>
+        <el-descriptions-item label="审批意见" :span="2">{{ currentRenewRecord?.approval_comment || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button @click="renewDetailDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
 
@@ -365,13 +465,102 @@
         <el-button @click="recordDetailDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 设备审批对话框 -->
+    <el-dialog title="设备审批" v-model="approvalDialogVisible" width="1200px">
+      <el-tabs v-model="approvalTabActive">
+        <el-tab-pane label="借用审批" name="borrow">
+          <div class="record-search">
+            <el-select v-model="approvalSearchForm.status" placeholder="审批状态" clearable class="search-select">
+              <el-option label="全部" :value="null" />
+              <el-option label="待导师审批" value="pending_teacher" />
+              <el-option label="待管理员审批" value="pending_admin" />
+            </el-select>
+            <el-button type="primary" @click="loadApprovalRecords">查询</el-button>
+          </div>
+          <el-table :data="approvalRecords" border stripe max-height="500">
+            <el-table-column prop="borrow_code" label="申请编号" width="120" />
+            <el-table-column prop="equipment_name" label="设备名称" width="150" />
+            <el-table-column prop="applicant_name" label="借用人" width="120" />
+            <el-table-column label="借用日期" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.borrow_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="预计归还" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.expect_return_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" width="140">
+              <template #default="{ row }">
+                <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="200" fixed="right">
+              <template #default="{ row }">
+                <template v-if="row.status === 'pending_teacher'">
+                  <el-button type="success" size="small" @click="handleTeacherApprove(row)">导师审批</el-button>
+                </template>
+                <template v-else-if="row.status === 'pending_admin'">
+                  <el-button type="success" size="small" @click="handleAdminApprove(row)">管理员审批</el-button>
+                </template>
+                <el-button type="primary" size="small" @click="handleRecordDetail(row)">详情</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="续借审批" name="renew">
+          <div class="record-search">
+            <el-select v-model="renewApprovalSearchForm.status" placeholder="申请状态" clearable class="search-select">
+              <el-option label="全部" :value="null" />
+              <el-option label="待审批" value="pending" />
+            </el-select>
+            <el-button type="primary" @click="loadRenewApprovalRecords">查询</el-button>
+          </div>
+          <el-table :data="renewApprovalRecords" border stripe max-height="500">
+            <el-table-column prop="renew_code" label="申请编号" width="120" />
+            <el-table-column prop="equipment_name" label="设备名称" width="150" />
+            <el-table-column prop="applicant_name" label="申请人" width="120" />
+            <el-table-column label="原归还日期" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.original_return_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="新归还日期" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.new_return_date) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="renew_reason" label="续借原因" width="200" />
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="getRenewStatusType(row.status)">{{ getRenewStatusText(row.status) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="200" fixed="right">
+              <template #default="{ row }">
+                <template v-if="row.status === 'pending'">
+                  <el-button type="success" size="small" @click="handleRenewApprove(row)">审批</el-button>
+                </template>
+                <el-button type="primary" size="small" @click="handleRenewDetail(row)">详情</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
+      <template #footer>
+        <el-button @click="approvalDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Search, Refresh, List } from '@element-plus/icons-vue'
+import { Search, Refresh, List, CircleCheck } from '@element-plus/icons-vue'
 import { get, post, put } from '@/utils/request'
 
 const loading = ref(false)
@@ -383,17 +572,26 @@ const recordDialogVisible = ref(false)
 const approveDialogVisible = ref(false)
 const detailDialogVisible = ref(false)
 const recordDetailDialogVisible = ref(false)
+const renewApproveDialogVisible = ref(false)
+const renewDetailDialogVisible = ref(false)
+const approvalDialogVisible = ref(false)
+const pendingApprovalCount = ref(0)
 const applyFormRef = ref(null)
 const receiveFormRef = ref(null)
 const returnFormRef = ref(null)
 const renewFormRef = ref(null)
 const approveFormRef = ref(null)
+const renewApproveFormRef = ref(null)
 
 const tableData = ref([])
 const categoryList = ref([])
 const borrowRecords = ref([])
+const renewRecords = ref([])
 const currentEquipment = ref(null)
 const currentBorrowRecord = ref(null)
+const currentRenewRecord = ref(null)
+const recordTabActive = ref('borrow')
+const approvalTabActive = ref('borrow')
 
 const searchForm = reactive({
   status: null,
@@ -410,6 +608,21 @@ const pagination = reactive({
 const recordSearchForm = reactive({
   status: null
 })
+
+const renewSearchForm = reactive({
+  status: null
+})
+
+const approvalSearchForm = reactive({
+  status: null
+})
+
+const renewApprovalSearchForm = reactive({
+  status: null
+})
+
+const approvalRecords = ref([])
+const renewApprovalRecords = ref([])
 
 const applyForm = reactive({
   equipment_id: null,
@@ -463,6 +676,18 @@ const approveForm = reactive({
   approval_comment: '',
   new_borrow_date: '',
   new_return_date: ''
+})
+
+const renewApproveForm = reactive({
+  id: null,
+  renew_code: '',
+  equipment_name: '',
+  applicant_name: '',
+  original_return_date: '',
+  new_return_date: '',
+  renew_reason: '',
+  approval_status: 'approved',
+  approval_comment: ''
 })
 
 const applyRules = {
@@ -536,11 +761,51 @@ const loadBorrowRecords = async () => {
     const params = recordSearchForm.status ? { status: recordSearchForm.status } : {}
     const res = await get('/equipment/borrow', params)
     borrowRecords.value = res?.data || []
+    // 同时加载续借申请列表
+    await loadRenewRecords()
     recordDialogVisible.value = true
   } catch (error) {
     console.error('加载借还记录失败:', error)
     ElMessage.error('加载借还记录失败')
   }
+}
+
+const openApprovalDialog = async () => {
+  await loadApprovalRecords()
+  await loadRenewApprovalRecords()
+  approvalDialogVisible.value = true
+}
+
+const loadApprovalRecords = async () => {
+  try {
+    const params = approvalSearchForm.status ? { status: approvalSearchForm.status } : {}
+    const res = await get('/equipment/borrow', params)
+    const data = res?.data || []
+    approvalRecords.value = data.filter(r => r.status === 'pending_teacher' || r.status === 'pending_admin')
+    updatePendingApprovalCount()
+  } catch (error) {
+    console.error('加载审批记录失败:', error)
+    ElMessage.error('加载审批记录失败')
+  }
+}
+
+const loadRenewApprovalRecords = async () => {
+  try {
+    const params = renewApprovalSearchForm.status ? { status: renewApprovalSearchForm.status } : {}
+    const res = await get('/equipment/renew', params)
+    const data = res?.data || []
+    renewApprovalRecords.value = data.filter(r => r.status === 'pending')
+    updatePendingApprovalCount()
+  } catch (error) {
+    console.error('加载续借审批记录失败:', error)
+    ElMessage.error('加载续借审批记录失败')
+  }
+}
+
+const updatePendingApprovalCount = () => {
+  const borrowPendingCount = approvalRecords.value.length
+  const renewPendingCount = renewApprovalRecords.value.length
+  pendingApprovalCount.value = borrowPendingCount + renewPendingCount
 }
 
 const resetSearch = () => {
@@ -580,7 +845,7 @@ const handleSubmitApply = async () => {
     ElMessage.success('申请提交成功')
     applyDialogVisible.value = false
     loadData()
-    loadBorrowRecords()
+    openApprovalDialog()
   } catch (error) {
     console.error('提交申请失败:', error)
     ElMessage.error('提交申请失败')
@@ -682,8 +947,33 @@ const handleRenew = (row) => {
 
 const handleSubmitRenew = async () => {
   try {
-    ElMessage.success('续借申请已提交，等待审批')
+    if (!renewForm.new_return_date) {
+      ElMessage.error('请选择新归还日期')
+      return
+    }
+    if (!renewForm.renew_reason) {
+      ElMessage.error('请输入续借原因')
+      return
+    }
+    
+    const data = {
+      borrow_record_id: currentBorrowRecord.value.id,
+      equipment_id: renewForm.equipment_id,
+      equipment_name: renewForm.equipment_name,
+      asset_code: currentBorrowRecord.value.asset_code,
+      applicant_id: currentBorrowRecord.value.applicant_id,
+      applicant_name: currentBorrowRecord.value.applicant_name,
+      original_return_date: currentBorrowRecord.value.expect_return_date,
+      new_return_date: renewForm.new_return_date,
+      renew_reason: renewForm.renew_reason
+    }
+    
+    await post('/equipment/renew', data)
+    ElMessage.success('续借申请已提交，等待管理员审批')
     renewDialogVisible.value = false
+    loadData()
+    approvalTabActive.value = 'renew'
+    openApprovalDialog()
   } catch (error) {
     console.error('续借申请失败:', error)
     ElMessage.error('续借申请失败')
@@ -727,11 +1017,88 @@ const handleSubmitApprove = async () => {
     ElMessage.success('审批成功')
     approveDialogVisible.value = false
     loadBorrowRecords()
+    loadApprovalRecords()
     loadData()
   } catch (error) {
     console.error('审批失败:', error)
     ElMessage.error('审批失败')
   }
+}
+
+// 加载续借申请列表
+const loadRenewRecords = async () => {
+  try {
+    const params = renewSearchForm.status ? { status: renewSearchForm.status } : {}
+    const res = await get('/equipment/renew', params)
+    renewRecords.value = res?.data || []
+  } catch (error) {
+    console.error('加载续借申请列表失败:', error)
+    ElMessage.error('加载续借申请列表失败')
+  }
+}
+
+// 续借审批
+const handleRenewApprove = (row) => {
+  renewApproveForm.id = row.id
+  renewApproveForm.renew_code = row.renew_code
+  renewApproveForm.equipment_name = row.equipment_name
+  renewApproveForm.applicant_name = row.applicant_name
+  renewApproveForm.original_return_date = row.original_return_date
+  renewApproveForm.new_return_date = row.new_return_date
+  renewApproveForm.renew_reason = row.renew_reason
+  renewApproveForm.approval_status = 'approved'
+  renewApproveForm.approval_comment = ''
+  currentRenewRecord.value = row
+  renewApproveDialogVisible.value = true
+}
+
+// 提交续借审批
+const handleSubmitRenewApprove = async () => {
+  try {
+    if (!renewApproveForm.id) {
+      ElMessage.error('未找到续借申请')
+      return
+    }
+    const data = {
+      approval_status: renewApproveForm.approval_status,
+      approval_comment: renewApproveForm.approval_comment
+    }
+    await put(`/equipment/renew/${renewApproveForm.id}/approve`, data)
+    ElMessage.success('审批成功')
+    renewApproveDialogVisible.value = false
+    loadRenewRecords()
+    loadRenewApprovalRecords()
+    loadData()
+  } catch (error) {
+    console.error('审批失败:', error)
+    ElMessage.error('审批失败')
+  }
+}
+
+// 续借详情
+const handleRenewDetail = (row) => {
+  currentRenewRecord.value = row
+  renewDetailDialogVisible.value = true
+}
+
+// 续借状态类型
+const getRenewStatusType = (status) => {
+  const map = {
+    pending: 'warning',
+    approved: 'success',
+    rejected: 'danger'
+  }
+  return map[status] || 'info'
+}
+
+// 续借状态文本
+const getRenewStatusText = (status) => {
+  const map = {
+    pending: '待审批',
+    approved: '已通过',
+    rejected: '已拒绝'
+  }
+  return map[status] || status
 }
 
 const handleRecordDetail = (row) => {
@@ -796,6 +1163,8 @@ const formatDate = (date) => {
 onMounted(() => {
   loadData()
   loadCategories()
+  loadApprovalRecords()
+  loadRenewApprovalRecords()
 })
 </script>
 

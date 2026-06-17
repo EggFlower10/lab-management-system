@@ -208,7 +208,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Search, Refresh, Plus, Download } from '@element-plus/icons-vue'
 import { get, post, put, del } from '@/utils/request'
-import { downloadDocx } from '@/utils/export'
+import { downloadExcel } from '@/utils/export'
 
 const loading = ref(false)
 const dialogVisible = ref(false)
@@ -435,22 +435,7 @@ const handleCurrentChange = () => {
 
 const handleExport = async () => {
   try {
-    await downloadDocx('/export/quality-analysis', 'experiment-quality-analysis.docx', {
-      year: new Date().getFullYear().toString(),
-      semester: '一'
-    }, {
-      responseType: 'blob'
-    })
-    ElMessage.success('瀵煎嚭鎴愬姛')
-    return
-    const url = ''
-    const link = document.createElement('a')
-    link.href = url
-    link.download = '实验课程教学质量分析.docx'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
+    await downloadExcel('/experiment-quality/export', 'experiment-quality.xlsx')
     ElMessage.success('导出成功')
   } catch (error) {
     ElMessage.error('导出失败')

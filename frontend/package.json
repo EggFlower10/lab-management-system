@@ -27,6 +27,7 @@
     "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^4.5.2",
     "@vue/tsconfig": "^0.5.1",
+    "connect-history-api-fallback": "^2.0.0",
     "sass": "^1.71.1",
     "typescript": "~5.4.2",
     "unplugin-auto-import": "^0.17.5",

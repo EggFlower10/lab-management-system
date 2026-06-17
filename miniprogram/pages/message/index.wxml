@@ -1,0 +1,45 @@
+<view class="page-shell">
+  <view class="hero-card">
+    <text class="hero-title">消息通知</text>
+    <text class="hero-subtitle">审批结果、借还提醒、课程签到与系统公告都会集中在这里。</text>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">分类筛选</text>
+    <text class="section-meta">点击消息即标记已读</text>
+  </view>
+  <view class="capsule-row">
+    <view
+      wx:for="{{categories}}"
+      wx:key="key"
+      class="capsule {{activeCategory === item.key ? 'active' : ''}}"
+      data-category="{{item.key}}"
+      bindtap="changeCategory"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <block wx:if="{{list.length}}">
+    <view
+      wx:for="{{list}}"
+      wx:key="id"
+      class="list-card message-card {{item.read ? 'read' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="openMessage"
+    >
+      <view class="card-title-row message-head">
+        <view class="message-main">
+          <text class="message-title">{{item.title}}</text>
+          <text class="message-content">{{item.content}}</text>
+        </view>
+        <view class="message-badge">{{item.categoryLabel}}</view>
+      </view>
+      <view class="card-line">
+        <text>{{item.createdAt}}</text>
+        <text class="meta-text">{{item.read ? '已读' : '未读'}}</text>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">当前分类没有消息通知。</view>
+</view>

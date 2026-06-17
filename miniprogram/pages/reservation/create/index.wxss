@@ -1,0 +1,7 @@
+.reservation-form {
+  margin-top: 24rpx;
+}
+
+.submit-button {
+  margin-top: 28rpx;
+}

@@ -1,0 +1,71 @@
+<view class="page-shell without-tabbar login-page">
+  <view class="login-hero">
+    <text class="hero-kicker">Lab Management Mini Program</text>
+    <text class="login-title">实验室预约管理系统</text>
+    <text class="login-subtitle">支持微信一键登录、手机号绑定、学号/工号绑定与身份认证的一站式实验室小程序。</text>
+  </view>
+
+  <view class="section-header login-header">
+    <text class="section-title">选择身份</text>
+    <text class="section-meta">微信登录会按当前选中身份发起认证</text>
+  </view>
+
+  <view class="role-list">
+    <view
+      wx:for="{{roles}}"
+      wx:key="key"
+      class="role-card {{activeRole === item.key ? 'active' : ''}}"
+      data-role="{{item.key}}"
+      bindtap="handleRoleSelect"
+    >
+      <text class="role-title">{{item.label}}</text>
+      <text class="role-intro">{{item.intro}}</text>
+    </view>
+  </view>
+
+  <view class="form-card auth-card">
+    <view class="section-header compact-header">
+      <text class="section-title">微信快速登录</text>
+      <text class="section-meta">推荐优先使用</text>
+    </view>
+    <text class="wechat-desc">完成微信授权后，可继续绑定手机号和学号/工号；已绑定且审核通过的账号可直接进入系统。</text>
+    <button class="btn-primary login-button" loading="{{wechatLoading}}" bindtap="handleWechatLogin">微信一键登录</button>
+  </view>
+
+  <view class="form-card login-form">
+    <view class="section-header compact-header">
+      <text class="section-title">账号密码登录</text>
+      <text class="section-meta">兼容现有测试账号</text>
+    </view>
+    <view class="form-item">
+      <text class="form-label">账号</text>
+      <input
+        class="form-input"
+        value="{{form.username}}"
+        data-field="username"
+        bindinput="handleInput"
+        placeholder="请输入账号"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">密码</text>
+      <input
+        class="form-input"
+        password
+        value="{{form.password}}"
+        data-field="password"
+        bindinput="handleInput"
+        placeholder="请输入密码"
+      />
+    </view>
+
+    <view class="account-tip">
+      <text>学生账号：stu2026001</text>
+      <text>教师账号：tea2026001</text>
+      <text>管理员账号：admin</text>
+    </view>
+
+    <button class="btn-primary login-button" loading="{{loading}}" bindtap="submitLogin">进入系统</button>
+  </view>
+</view>

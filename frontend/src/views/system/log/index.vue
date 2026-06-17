@@ -75,82 +75,10 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search, Refresh, Delete } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
+import { get, del } from '@/utils/request'
 
 const loading = ref(false)
-const originalTableData = ref<any[]>([
-  {
-    id: 65,
-    username: 'admin',
-    ip: '192.168.1.100',
-    url: '/system/user/update',
-    module: '用户管理',
-    method: 'POST',
-    created_at: '2025-04-17 11:47:48',
-    content: '更新用户信息'
-  },
-  {
-    id: 64,
-    username: 'admin',
-    ip: '192.168.1.100',
-    url: '/system/role/update',
-    module: '角色管理',
-    method: 'POST',
-    created_at: '2025-04-17 11:47:46',
-    content: '更新角色信息'
-  },
-  {
-    id: 63,
-    username: 'admin',
-    ip: '192.168.1.100',
-    url: '/system/menu/add',
-    module: '菜单管理',
-    method: 'POST',
-    created_at: '2025-04-17 11:47:44',
-    content: '新增菜单'
-  },
-  {
-    id: 62,
-    username: 'admin',
-    ip: '192.168.1.100',
-    url: '/system/permission/delete',
-    module: '权限管理',
-    method: 'POST',
-    created_at: '2025-04-17 11:47:42',
-    content: '删除权限'
-  },
-  {
-    id: 61,
-    username: 'admin',
-    ip: '192.168.1.100',
-    url: '/system/organization/add',
-    module: '机构管理',
-    method: 'POST',
-    created_at: '2025-04-17 11:47:40',
-    content: '新增机构'
-  },
-  {
-    id: 60,
-    username: 'admin',
-    ip: '192.168.1.100',
-    url: '/system/department/edit',
-    module: '部门管理',
-    method: 'POST',
-    created_at: '2025-04-17 11:47:38',
-    content: '编辑部门'
-  },
-  {
-    id: 59,
-    username: 'admin',
-    ip: '192.168.1.100',
-    url: '/system/config/update',
-    module: '系统配置',
-    method: 'POST',
-    created_at: '2025-04-17 11:47:36',
-    content: '更新系统配置'
-  }
-])
-
-const tableData = ref<any[]>([...originalTableData.value])
+const tableData = ref<any[]>([])
 
 const searchParams = reactive({
   keyword: '',
@@ -161,7 +89,7 @@ const searchParams = reactive({
 const pagination = reactive({ 
   page: 1, 
   pageSize: 10, 
-  total: 100 
+  total: 0 
 })
 
 const methodTagType = (method: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
@@ -174,53 +102,42 @@ const methodTagType = (method: string): 'primary' | 'success' | 'warning' | 'inf
   return types[method] || 'info'
 }
 
-const handleSearch = () => {
-  // 搜索逻辑
-  console.log('搜索参数:', searchParams)
-  // 模拟筛选功能
-  const filteredData = originalTableData.value.filter(item => {
-    // 关键词匹配
-    const keywordMatch = !searchParams.keyword || 
-      item.username.toLowerCase().includes(searchParams.keyword.toLowerCase()) ||
-      item.ip.toLowerCase().includes(searchParams.keyword.toLowerCase()) ||
-      item.url.toLowerCase().includes(searchParams.keyword.toLowerCase())
-    
-    // 模块匹配 - 修复模块值不匹配的问题
-    const moduleMatch = !searchParams.module || {
-      'user': '用户管理',
-      'role': '角色管理',
-      'menu': '菜单管理',
-      'permission': '权限管理',
-      'organization': '机构管理',
-      'department': '部门管理',
-      'config': '系统配置'
-    }[searchParams.module] === item.module
-    
-    // 时间范围匹配
-    const timeMatch = !searchParams.timeRange.length || 
-      (searchParams.timeRange[0] && searchParams.timeRange[1] &&
-       item.created_at >= searchParams.timeRange[0] && 
-       item.created_at <= searchParams.timeRange[1])
-    
-    return keywordMatch && moduleMatch && timeMatch
-  })
-  
-  tableData.value = filteredData
-  pagination.total = filteredData.length
-  
-  if (filteredData.length === 0) {
-    ElMessage.info('未找到匹配的操作日志')
-  } else {
-    ElMessage.success(`搜索成功，找到 ${filteredData.length} 条记录`)
+const loadData = async () => {
+  try {
+    loading.value = true
+    const params: any = {
+      page: pagination.page,
+      pageSize: pagination.pageSize
+    }
+    if (searchParams.keyword) {
+      params.keyword = searchParams.keyword
+    }
+    if (searchParams.timeRange.length === 2) {
+      params.start_time = searchParams.timeRange[0]
+      params.end_time = searchParams.timeRange[1]
+    }
+    const res = await get('/logs', params)
+    tableData.value = res?.data || []
+    pagination.total = res?.total || 0
+  } catch (error) {
+    console.error('加载操作日志失败:', error)
+    ElMessage.error('加载操作日志失败')
+  } finally {
+    loading.value = false
   }
+}
+
+const handleSearch = () => {
+  pagination.page = 1
+  loadData()
 }
 
 const handleReset = () => {
   searchParams.keyword = ''
   searchParams.module = ''
   searchParams.timeRange = []
-  // 重置为原始数据
-  tableData.value = [...originalTableData.value]
+  pagination.page = 1
+  loadData()
 }
 
 const handleClearLog = () => {
@@ -232,25 +149,31 @@ const handleClearLog = () => {
       cancelButtonText: '取消',
       type: 'warning'
     }
-  ).then(() => {
-    tableData.value = []
-    ElMessage.success('日志已清空')
+  ).then(async () => {
+    try {
+      await del('/logs')
+      tableData.value = []
+      pagination.total = 0
+      ElMessage.success('日志已清空')
+    } catch (error) {
+      ElMessage.error('清空日志失败')
+    }
   }).catch(() => {})
 }
 
 const handleSizeChange = (size: number) => {
   pagination.pageSize = size
   pagination.page = 1
-  // 重新加载数据
+  loadData()
 }
 
 const handleCurrentChange = (page: number) => {
   pagination.page = page
-  // 重新加载数据
+  loadData()
 }
 
 onMounted(() => {
-  // 初始化数据
+  loadData()
 })
 </script>
 

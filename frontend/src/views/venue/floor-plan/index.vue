@@ -5,7 +5,7 @@
         <div class="card-header">
           <span>楼层平面图</span>
           <div class="header-right">
-            <el-select v-model="selectedBuilding" placeholder="选择楼宇" class="search-select">
+            <el-select v-model="selectedBuilding" placeholder="选择楼宇" class="search-select" :loading="buildingsLoading">
               <el-option
                 v-for="building in buildingList"
                 :key="building.id"
@@ -15,7 +15,7 @@
             </el-select>
             <el-select v-model="selectedFloor" placeholder="选择楼层" class="search-select">
               <el-option
-                v-for="floor in floorList"
+                v-for="floor in availableFloors"
                 :key="floor"
                 :label="`${floor}楼`"
                 :value="floor"
@@ -46,7 +46,7 @@
               'room-full': room.status === 'full'
             }"
           >
-            <div class="room-title">{{ room.roomNumber }}{{ room.name.replace(room.roomNumber, '') }}</div>
+            <div class="room-title">{{ room.name }}</div>
             <div class="room-info">{{ room.type }} | {{ room.seats }}座</div>
             <div class="room-status">{{ statusLabels[room.status] }}</div>
           </div>
@@ -61,15 +61,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+import request from '@/utils/request'
 
 type RoomStatus = 'free' | 'using' | 'full'
 
 interface BuildingItem {
   id: number
   name: string
+  totalFloors?: number
 }
 
 interface RoomItem {
@@ -81,26 +83,22 @@ interface RoomItem {
   status: RoomStatus
 }
 
-type FloorPlanMap = Record<number, Record<number, RoomItem[]>>
-
 const statusLabels: Record<RoomStatus, string> = {
   free: '空闲',
   using: '使用中',
   full: '已满',
 }
 
-const selectedBuilding = ref(1)
-const selectedFloor = ref(1)
+const selectedBuilding = ref<number | null>(null)
+const selectedFloor = ref<number>(1)
 const statusFilters = ref<RoomStatus[]>(['free', 'using', 'full'])
 
-const buildingList = ref<BuildingItem[]>([
-  { id: 1, name: 'A教学楼' },
-  { id: 2, name: 'B实验楼' },
-  { id: 3, name: 'C科研楼' },
-  { id: 4, name: 'D体育馆' },
-])
+const buildingsLoading = ref(false)
+const roomsLoading = ref(false)
 
-const floorList = ref([1, 2, 3, 4, 5, 6])
+const buildingList = ref<BuildingItem[]>([])
+const roomList = ref<RoomItem[]>([])
+const availableFloors = ref<number[]>([])
 
 const currentBuildingName = computed(() => {
   return buildingList.value.find((item) => item.id === selectedBuilding.value)?.name || ''
@@ -108,80 +106,119 @@ const currentBuildingName = computed(() => {
 
 const floorPlanData = ref<RoomItem[]>([])
 
-const mockFloorPlanData: FloorPlanMap = {
-  1: {
-    1: [
-      { id: 1, name: 'A101多媒体教室', roomNumber: 'A101', type: '教室', seats: 120, status: 'free' },
-      { id: 2, name: 'A102多媒体教室', roomNumber: 'A102', type: '教室', seats: 120, status: 'free' },
-      { id: 3, name: 'A103阶梯教室', roomNumber: 'A103', type: '教室', seats: 200, status: 'free' },
-      { id: 4, name: 'A104机房', roomNumber: 'A104', type: '机房', seats: 60, status: 'free' },
-      { id: 5, name: 'A105会议室', roomNumber: 'A105', type: '会议室', seats: 30, status: 'free' },
-      { id: 6, name: 'A106办公室', roomNumber: 'A106', type: '办公室', seats: 8, status: 'using' },
-    ],
-    2: [
-      { id: 7, name: 'A201实验室', roomNumber: 'A201', type: '实验室', seats: 30, status: 'using' },
-      { id: 8, name: 'A202实验室', roomNumber: 'A202', type: '实验室', seats: 50, status: 'free' },
-      { id: 9, name: 'A203讨论室', roomNumber: 'A203', type: '讨论室', seats: 10, status: 'free' },
-      { id: 10, name: 'A204教师办公室', roomNumber: 'A204', type: '办公室', seats: 6, status: 'using' },
-      { id: 11, name: 'A205会议室', roomNumber: 'A205', type: '会议室', seats: 20, status: 'free' },
-      { id: 12, name: 'A206资料室', roomNumber: 'A206', type: '资料室', seats: 0, status: 'free' },
-    ],
-  },
-  2: {
-    1: [
-      { id: 13, name: 'B101物理实验室', roomNumber: 'B101', type: '物理实验室', seats: 24, status: 'free' },
-      { id: 14, name: 'B102化学实验室', roomNumber: 'B102', type: '化学实验室', seats: 24, status: 'using' },
-      { id: 15, name: 'B103准备室', roomNumber: 'B103', type: '准备室', seats: 0, status: 'free' },
-      { id: 16, name: 'B104器材室', roomNumber: 'B104', type: '器材室', seats: 0, status: 'free' },
-    ],
-    2: [
-      { id: 17, name: 'B201生物实验室', roomNumber: 'B201', type: '生物实验室', seats: 24, status: 'free' },
-      { id: 18, name: 'B202实验器材室', roomNumber: 'B202', type: '器材室', seats: 0, status: 'free' },
-      { id: 19, name: 'B203化学准备室', roomNumber: 'B203', type: '准备室', seats: 0, status: 'free' },
-      { id: 20, name: 'B204样品室', roomNumber: 'B204', type: '样品室', seats: 0, status: 'free' },
-    ],
-  },
-  3: {
-    1: [
-      { id: 21, name: 'C101物理实验室', roomNumber: 'C101', type: '物理实验室', seats: 40, status: 'free' },
-      { id: 22, name: 'C102化学实验室', roomNumber: 'C102', type: '化学实验室', seats: 40, status: 'free' },
-      { id: 23, name: 'C103材料实验室', roomNumber: 'C103', type: '材料实验室', seats: 30, status: 'using' },
-      { id: 24, name: 'C104分析实验室', roomNumber: 'C104', type: '分析实验室', seats: 20, status: 'free' },
-      { id: 25, name: 'C105仪器室', roomNumber: 'C105', type: '仪器室', seats: 0, status: 'free' },
-      { id: 26, name: 'C106准备室', roomNumber: 'C106', type: '准备室', seats: 0, status: 'free' },
-    ],
-    2: [
-      { id: 27, name: 'C201研究室', roomNumber: 'C201', type: '研究室', seats: 6, status: 'free' },
-      { id: 28, name: 'C202研究室', roomNumber: 'C202', type: '研究室', seats: 6, status: 'free' },
-    ],
-    3: [
-      { id: 29, name: 'C301资料室', roomNumber: 'C301', type: '资料室', seats: 10, status: 'free' },
-      { id: 30, name: 'C302会议室', roomNumber: 'C302', type: '会议室', seats: 20, status: 'using' },
-    ],
-  },
-  4: {
-    1: [
-      { id: 31, name: 'D101篮球场', roomNumber: 'D101', type: '篮球场', seats: 500, status: 'free' },
-      { id: 32, name: 'D102羽毛球场', roomNumber: 'D102', type: '羽毛球场', seats: 200, status: 'using' },
-      { id: 33, name: 'D103乒乓球室', roomNumber: 'D103', type: '乒乓球室', seats: 50, status: 'free' },
-      { id: 34, name: 'D104健身房', roomNumber: 'D104', type: '健身房', seats: 0, status: 'free' },
-    ],
-    2: [
-      { id: 35, name: 'D201更衣室', roomNumber: 'D201', type: '更衣室', seats: 0, status: 'free' },
-      { id: 36, name: 'D202休息室', roomNumber: 'D202', type: '休息室', seats: 20, status: 'free' },
-    ],
-  },
+// 根据实际房间数据动态计算可用的楼层
+const updateAvailableFloors = () => {
+  const floorSet = new Set<number>()
+  roomList.value.forEach(room => {
+    const floor = (room as any).floor
+    if (floor !== undefined && floor !== null && floor !== '') {
+      floorSet.add(Number(floor))
+    } else {
+      floorSet.add(1)
+    }
+  })
+  const sortedFloors = Array.from(floorSet).sort((a, b) => a - b)
+  availableFloors.value = sortedFloors.length > 0 ? sortedFloors : [1]
+  if (!availableFloors.value.includes(selectedFloor.value)) {
+    selectedFloor.value = availableFloors.value[0] || 1
+  }
+}
+
+// 监听楼宇变化，重新加载该楼宇下的房间
+watch(selectedBuilding, (newVal) => {
+  if (newVal) {
+    loadRooms(newVal)
+  }
+})
+
+// 监听楼层变化，自动更新平面图
+watch(selectedFloor, () => {
+  if (roomList.value.length > 0) {
+    handleSearch()
+  }
+})
+
+const loadBuildings = async () => {
+  buildingsLoading.value = true
+  try {
+    const res: any = await request({
+      url: '/buildings',
+      method: 'get'
+    })
+    buildingList.value = (res || []).map((b: any) => ({
+      id: b.BuildingID || b.id,
+      name: b.BuildingName || b.name,
+      totalFloors: b.TotalFloors || b.totalFloors
+    }))
+    if (buildingList.value.length > 0) {
+      selectedBuilding.value = buildingList.value[0].id
+    } else {
+      ElMessage.info('暂无楼宇数据')
+    }
+  } catch (error: any) {
+    console.error('获取楼宇列表失败:', error)
+    ElMessage.error(error?.response?.data?.message || '获取楼宇列表失败')
+  } finally {
+    buildingsLoading.value = false
+  }
+}
+
+const loadRooms = async (buildingId: number) => {
+  roomsLoading.value = true
+  try {
+    const res: any = await request({
+      url: '/rooms',
+      method: 'get',
+      params: { buildingId }
+    })
+    // 将数据库字段映射为前端需要的格式
+    roomList.value = (res || []).map((r: any) => {
+      // 状态映射：available -> free, occupied/maintenance -> using, full -> full
+      let status: RoomStatus = 'free'
+      const rawStatus = String(r.status || 'available').toLowerCase()
+      if (rawStatus === 'available' || rawStatus === 'free' || rawStatus === '1') {
+        status = 'free'
+      } else if (rawStatus === 'occupied' || rawStatus === 'maintenance' || rawStatus === 'using' || rawStatus === '2') {
+        status = 'using'
+      } else if (rawStatus === 'full' || rawStatus === '3') {
+        status = 'full'
+      }
+      return {
+        id: r.RoomID || r.id,
+        name: r.RoomName || r.name,
+        roomNumber: r.RoomCode || r.roomNumber || '',
+        type: r.RoomType || r.type || '',
+        seats: r.Capacity || r.seats || 0,
+        floor: r.Floor || r.floor,
+        status
+      }
+    })
+    updateAvailableFloors()
+    // 自动显示平面图
+    if (roomList.value.length > 0) {
+      handleSearch()
+    }
+  } catch (error: any) {
+    console.error('获取房间列表失败:', error)
+    ElMessage.error(error?.response?.data?.message || '获取房间列表失败')
+  } finally {
+    roomsLoading.value = false
+  }
 }
 
 const handleSearch = () => {
-  const buildingData = mockFloorPlanData[selectedBuilding.value]
-  const floorRooms = buildingData?.[selectedFloor.value] ?? []
-  const filteredRooms = floorRooms.filter((room) => statusFilters.value.includes(room.status))
+  const filteredRooms = roomList.value
+    .filter((room) => {
+      const roomFloor = (room as any).floor
+      const floorNum = roomFloor !== undefined && roomFloor !== null && roomFloor !== '' ? Number(roomFloor) : 1
+      return floorNum === selectedFloor.value
+    })
+    .filter((room) => statusFilters.value.includes(room.status))
 
   floorPlanData.value = filteredRooms
 
-  if (!buildingData) {
-    ElMessage.info('当前楼宇暂无数据')
+  if (roomList.value.length === 0) {
+    ElMessage.info('当前楼宇暂无房间数据')
     return
   }
 
@@ -193,8 +230,8 @@ const handleSearch = () => {
   ElMessage.success(`已加载 ${currentBuildingName.value} ${selectedFloor.value} 楼，共 ${filteredRooms.length} 个房间`)
 }
 
-onMounted(() => {
-  handleSearch()
+onMounted(async () => {
+  await loadBuildings()
 })
 </script>
 

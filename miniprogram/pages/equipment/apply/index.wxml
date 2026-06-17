@@ -1,0 +1,78 @@
+<view class="page-shell without-tabbar" wx:if="{{equipment}}">
+  <view class="hero-card">
+    <text class="hero-title">{{equipment.name}}</text>
+    <text class="hero-subtitle">{{equipment.no}} · {{equipment.model}} · {{equipment.statusText}}</text>
+  </view>
+
+  <view class="list-card equipment-summary">
+    <view class="card-line">
+      <text>设备分类</text>
+      <text class="meta-text">{{equipment.category}}</text>
+    </view>
+    <view class="card-line">
+      <text>存放位置</text>
+      <text class="meta-text">{{equipment.location}}</text>
+    </view>
+    <view class="card-line">
+      <text>借还码</text>
+      <text class="meta-text">{{equipment.no}}</text>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="form-item">
+      <text class="form-label">借用日期</text>
+      <picker mode="date" value="{{form.borrowDate}}" start="{{today}}" data-field="borrowDate" bindchange="handleDate">
+        <view class="form-picker">{{form.borrowDate}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">借用时间</text>
+      <picker mode="time" value="{{form.borrowTime}}" data-field="borrowTime" bindchange="handleTime">
+        <view class="form-picker">{{form.borrowTime}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">归还日期</text>
+      <picker mode="date" value="{{form.returnDate}}" start="{{form.borrowDate}}" data-field="returnDate" bindchange="handleDate">
+        <view class="form-picker">{{form.returnDate}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">归还时间</text>
+      <picker mode="time" value="{{form.returnTime}}" data-field="returnTime" bindchange="handleTime">
+        <view class="form-picker">{{form.returnTime}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">使用用途</text>
+      <textarea class="form-textarea" value="{{form.purpose}}" data-field="purpose" bindinput="handleInput" placeholder="请填写课程实验、项目调试、活动拍摄等具体用途" />
+    </view>
+    <view class="form-item">
+      <view class="switch-row">
+        <view>
+          <text class="form-label no-margin">微信订阅提醒</text>
+          <text class="tiny hint-text">已配置模板时会发起微信订阅授权；未配置时继续保留消息中心内的模拟提醒</text>
+        </view>
+        <switch checked="{{form.notifySubscribe}}" data-field="notifySubscribe" bindchange="handleSwitch" color="#1c4fa1" />
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="switch-row">
+        <view>
+          <text class="form-label no-margin">小程序通知</text>
+          <text class="tiny hint-text">同时写入消息中心，便于回溯借还过程</text>
+        </view>
+        <switch checked="{{form.notifyMiniProgram}}" data-field="notifyMiniProgram" bindchange="handleSwitch" color="#1c4fa1" />
+      </view>
+    </view>
+    <view class="notice-card apply-tips">
+      <text class="card-title">借用流程</text>
+      <text class="card-subtitle">提交申请后由管理员审批。审批通过后，请返回设备页使用“扫码借出”完成领用，归还时再使用“扫码归还”。</text>
+    </view>
+    <button class="btn-primary submit-button" loading="{{submitting}}" bindtap="submit">提交借用申请</button>
+  </view>
+</view>
+<view wx:else class="page-shell without-tabbar">
+  <view class="empty-card">未找到对应设备信息，请返回列表页重新选择设备。</view>
+</view>

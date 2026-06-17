@@ -348,7 +348,7 @@ const groupedScheduleList = computed(() => {
   
   return Object.values(groups).map((item: any) => ({
     ...item,
-    week_nos: [...new Set(item.week_nos)].sort((a: number, b: number) => a - b),
+    week_nos: Array.from(new Set<number>(item.week_nos as number[])).sort((a, b) => a - b),
     week_count: item.week_nos.length,
     week_range: item.week_nos.length > 1 
       ? `${item.week_nos[0]}-${item.week_nos[item.week_nos.length - 1]}周`
@@ -453,7 +453,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  searchForm.teacherId = null
+  searchForm.teacherName = ''
   searchForm.courseName = ''
   handleSearch()
 }
@@ -606,6 +606,8 @@ async function handleDelete(row: any) {
     }
   }
 }
+
+void handleDelete
 
 async function handleDeleteAll(row: any) {
   try {
@@ -774,6 +776,7 @@ function formatWeekNo(_row: any, _column: any, cellValue: any) {
 function formatStatus(_row: any, _column: any, cellValue: number) {
   return cellValue === 1 ? '正常' : '已取消'
 }
+void formatStatus
 </script>
 
 <style scoped>

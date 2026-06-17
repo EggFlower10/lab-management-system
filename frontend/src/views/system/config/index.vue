@@ -10,6 +10,12 @@
               <el-option label="全部分组" value="" />
               <el-option label="系统设置" value="system" />
               <el-option label="安全设置" value="security" />
+              <el-option label="设备管理" value="equipment" />
+              <el-option label="耗材管理" value="consumable" />
+              <el-option label="排课管理" value="reservation" />
+              <el-option label="教学管理" value="teaching" />
+              <el-option label="场地管理" value="venue" />
+              <el-option label="通知设置" value="notification" />
               <el-option label="其他设置" value="other" />
             </el-select>
             <el-button type="success" @click="handleSearch">
@@ -36,8 +42,8 @@
         <el-table-column prop="configValue" label="值" width="150" />
         <el-table-column prop="group" label="分组" width="120">
           <template #default="{ row }">
-            <el-tag :type="row.group === 'system' ? 'primary' : row.group === 'security' ? 'warning' : 'info'">
-              {{ row.group === 'system' ? '系统设置' : row.group === 'security' ? '安全设置' : '其他设置' }}
+            <el-tag :type="getGroupTagType(row.group)">
+              {{ getGroupLabel(row.group) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -77,6 +83,12 @@
           <el-select v-model="form.group" placeholder="请选择分组">
             <el-option label="系统设置" value="system" />
             <el-option label="安全设置" value="security" />
+            <el-option label="设备管理" value="equipment" />
+            <el-option label="耗材管理" value="consumable" />
+            <el-option label="排课管理" value="reservation" />
+            <el-option label="教学管理" value="teaching" />
+            <el-option label="场地管理" value="venue" />
+            <el-option label="通知设置" value="notification" />
             <el-option label="其他设置" value="other" />
           </el-select>
         </el-form-item>
@@ -105,6 +117,7 @@ const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 
 const tableData = ref<any[]>([])
+const originalData = ref<any[]>([])
 
 const searchParams = reactive({
   keyword: '',
@@ -116,6 +129,12 @@ const pagination = reactive({
   pageSize: 10, 
   total: 0 
 })
+
+const renderTable = () => {
+  const start = (pagination.page - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  tableData.value = originalData.value.slice(start, end)
+}
 
 const form = reactive({
   id: 0,
@@ -141,26 +160,79 @@ const rules = reactive<FormRules>({
   ]
 })
 
+// 分组标签映射
+const groupLabelMap: Record<string, string> = {
+  'system': '系统设置',
+  'security': '安全设置',
+  'equipment': '设备管理',
+  'consumable': '耗材管理',
+  'reservation': '排课管理',
+  'teaching': '教学管理',
+  'venue': '场地管理',
+  'notification': '通知设置',
+  'other': '其他设置'
+}
+
+// 分组标签类型映射
+const groupTagTypeMap: Record<string, string> = {
+  'system': 'primary',
+  'security': 'danger',
+  'equipment': 'warning',
+  'consumable': 'success',
+  'reservation': 'info',
+  'teaching': '',
+  'venue': 'warning',
+  'notification': 'success',
+  'other': 'info'
+}
+
+const getGroupLabel = (group: string) => {
+  return groupLabelMap[group] || '其他设置'
+}
+
+const getGroupTagType = (group: string) => {
+  return groupTagTypeMap[group] || 'info'
+}
+
 const fetchData = async () => {
   loading.value = true
   try {
     const result = await get('/configs')
-    tableData.value = result || []
-    pagination.total = tableData.value.length
+    const data = result || []
+    data.sort((a: any, b: any) => {
+      if (a.group !== b.group) {
+        return (a.group || '').localeCompare(b.group || '')
+      }
+      return (a.sortOrder || 0) - (b.sortOrder || 0)
+    })
+    originalData.value = data
+    pagination.total = data.length
+    pagination.page = 1
+    renderTable()
   } catch (error) {
     console.error(error)
     ElMessage.error('获取配置列表失败')
     tableData.value = []
+    originalData.value = []
     pagination.total = 0
   } finally {
     loading.value = false
   }
 }
 
-const handleSearch = () => {
+const handleSearch = async () => {
   loading.value = true
   try {
-    const filteredData = tableData.value.filter(item => {
+    const result = await get('/configs')
+    let data = result || []
+    data.sort((a: any, b: any) => {
+      if (a.group !== b.group) {
+        return (a.group || '').localeCompare(b.group || '')
+      }
+      return (a.sortOrder || 0) - (b.sortOrder || 0)
+    })
+    
+    const filteredData = data.filter(item => {
       const keywordMatch = !searchParams.keyword || 
         item.configKey.toLowerCase().includes(searchParams.keyword.toLowerCase()) ||
         item.name.toLowerCase().includes(searchParams.keyword.toLowerCase())
@@ -170,8 +242,10 @@ const handleSearch = () => {
       return keywordMatch && groupMatch
     })
     
-    tableData.value = filteredData
+    originalData.value = filteredData
     pagination.total = filteredData.length
+    pagination.page = 1
+    renderTable()
     
     if (filteredData.length === 0) {
       ElMessage.info('未找到匹配的配置项')
@@ -276,10 +350,12 @@ const handleDialogClose = () => {
 const handleSizeChange = (size: number) => {
   pagination.pageSize = size
   pagination.page = 1
+  renderTable()
 }
 
 const handleCurrentChange = (page: number) => {
   pagination.page = page
+  renderTable()
 }
 
 onMounted(() => {

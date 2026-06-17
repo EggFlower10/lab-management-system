@@ -1,0 +1,50 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card" wx:if="{{lab}}">
+    <text class="hero-title">{{lab.name}}</text>
+    <text class="hero-subtitle">{{lab.building}} {{lab.roomNumber}} · 容纳 {{lab.capacity}} 人</text>
+  </view>
+
+  <view class="form-card reservation-form">
+    <view class="form-item">
+      <text class="form-label">项目名称</text>
+      <input class="form-input" value="{{form.projectName}}" data-field="projectName" bindinput="handleInput" placeholder="例如：机器学习课程大作业联调" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">使用目的</text>
+      <input class="form-input" value="{{form.purpose}}" data-field="purpose" bindinput="handleInput" placeholder="请描述实验内容或课程用途" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">使用日期</text>
+      <picker mode="date" value="{{form.date}}" start="{{today}}" bindchange="handleDateChange">
+        <view class="form-picker">{{form.date}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">时间段</text>
+      <picker mode="selector" range="{{timeSlots}}" value="{{timeSlotIndex}}" bindchange="handleSlotChange">
+        <view class="form-picker">{{timeSlots[timeSlotIndex]}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">使用人数</text>
+      <input class="form-input" type="number" value="{{form.headCount}}" data-field="headCount" bindinput="handleInput" placeholder="请输入人数" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">项目负责人</text>
+      <input class="form-input" value="{{form.projectLeader}}" data-field="projectLeader" bindinput="handleInput" placeholder="请输入负责人姓名" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">联系电话</text>
+      <input class="form-input" type="number" value="{{form.phone}}" data-field="phone" bindinput="handleInput" placeholder="请输入联系电话" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">班级信息</text>
+      <input class="form-input" value="{{form.memberClass}}" data-field="memberClass" bindinput="handleInput" placeholder="例如：计科 2023 级 2 班" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">备注说明</text>
+      <textarea class="form-textarea" value="{{form.remark}}" data-field="remark" bindinput="handleInput" placeholder="填写额外说明、安全需求或设备要求" />
+    </view>
+    <button class="btn-primary submit-button" loading="{{submitting}}" bindtap="submitForm">提交预约申请</button>
+  </view>
+</view>

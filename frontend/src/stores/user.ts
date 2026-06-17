@@ -80,6 +80,14 @@ const fixedMenus: MenuItem[] = [
     createMenuItem(62, '设备借还', '/equipment/borrow', 'Refresh', 6, 2),
     createMenuItem(63, '库存与统计', '/equipment/inventory', 'PieChart', 6, 3),
   ]),
+  createMenuItem(7, '耗材管理', '/consumable', 'ShoppingCart', 0, 7, [
+    createMenuItem(71, '耗材档案', '/consumable/archive', 'Folder', 7, 1),
+    createMenuItem(72, '入库管理', '/consumable/stock-in', 'Upload', 7, 2),
+    createMenuItem(73, '出库管理', '/consumable/stock-out', 'Download', 7, 3),
+    createMenuItem(74, '库存管理', '/consumable/stock', 'Store', 7, 4),
+    createMenuItem(76, '耗材设置', '/consumable/settings', 'Tools', 7, 5),
+    createMenuItem(77, '数据统计', '/consumable/statistics', 'TrendCharts', 7, 6),
+  ]),
 ]
 
 export const useUserStore = defineStore('user', {
@@ -92,10 +100,10 @@ export const useUserStore = defineStore('user', {
   }),
 
   getters: {
-    isLoggedIn: state => !!state.token,
-    username: state => state.userInfo?.username || '',
-    realName: state => state.userInfo?.realName || '',
-    avatar: state => state.userInfo?.avatar || '',
+    isLoggedIn: (state) => !!state.token,
+    username: (state) => state.userInfo?.username || '',
+    realName: (state) => state.userInfo?.realName || '',
+    avatar: (state) => state.userInfo?.avatar || '',
   },
 
   actions: {

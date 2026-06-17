@@ -1,0 +1,93 @@
+.stat-grid {
+  margin-top: 20rpx;
+}
+
+.stat-card {
+  padding: 24rpx;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  color: #6f7f98;
+}
+
+.stat-value {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #16345f;
+}
+
+.small-value {
+  font-size: 30rpx;
+}
+
+.stat-intro {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #7b8aa3;
+}
+
+.flow-card {
+  margin-top: 20rpx;
+  padding: 28rpx;
+}
+
+.notice-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.notice-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #183153;
+}
+
+.notice-text {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #37517f;
+}
+
+.notice-hint {
+  display: block;
+  margin-top: 14rpx;
+  color: #7b8aa3;
+}
+
+.compact-header {
+  margin: 0 0 20rpx;
+}
+
+.helper-text {
+  display: block;
+  margin-top: 12rpx;
+  color: #7b8aa3;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: -6rpx;
+}
+
+.preset-chip {
+  padding: 12rpx 20rpx;
+  border-radius: 999rpx;
+  background: #eef4ff;
+  color: #234e98;
+  font-size: 24rpx;
+}
+
+.submit-button {
+  margin-top: 28rpx;
+}

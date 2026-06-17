@@ -38,9 +38,13 @@
             {{ getBuildingName(row.BuildingID) }}
           </template>
         </el-table-column>
-        <el-table-column prop="FloorNo" label="楼层" width="80" />
+        <el-table-column prop="Floor" label="楼层" width="80" />
         <el-table-column prop="RoomType" label="房间类型" width="120" />
-        <el-table-column prop="SeatCount" label="座位数" width="100" />
+        <el-table-column label="座位数" width="100">
+          <template #default="{ row }">
+            {{ row.Capacity || row.SeatCount || 0 }}
+          </template>
+        </el-table-column>
         <el-table-column prop="Area" label="面积(㎡)" width="120" />
         <el-table-column prop="IsAvailable" label="是否可用" width="100">
           <template #default="{ row }">
@@ -92,8 +96,8 @@
             <el-option v-for="building in buildingList" :key="building.BuildingID" :label="building.BuildingName" :value="building.BuildingID" />
           </el-select>
         </el-form-item>
-        <el-form-item label="楼层" prop="FloorNo">
-          <el-input-number v-model="form.FloorNo" :min="1" placeholder="请输入楼层" />
+        <el-form-item label="楼层" prop="Floor">
+          <el-input-number v-model="form.Floor" :min="1" placeholder="请输入楼层" />
         </el-form-item>
         <el-form-item label="房间类型" prop="RoomType">
           <el-input v-model="form.RoomType" placeholder="请输入房间类型" />
@@ -139,6 +143,7 @@ const formRef = ref<FormInstance>()
 
 const buildingList = ref<any[]>([])
 
+const allData = ref<any[]>([])
 const tableData = ref<any[]>([])
 
 const fetchBuildingList = async () => {
@@ -151,13 +156,17 @@ const fetchBuildingList = async () => {
   }
 }
 
+const updatePageData = () => {
+  const start = (pagination.page - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  tableData.value = allData.value.slice(start, end)
+  pagination.total = allData.value.length
+}
+
 const fetchData = async () => {
   loading.value = true
   try {
-    const params: any = {
-      page: pagination.page,
-      pageSize: pagination.pageSize
-    }
+    const params: any = {}
     if (searchParams.code) {
       params.RoomCode = searchParams.code
     }
@@ -165,14 +174,17 @@ const fetchData = async () => {
       params.RoomName = searchParams.name
     }
     if (searchParams.building) {
-      params.BuildingID = searchParams.building
+      params.buildingId = searchParams.building
     }
     const result = await get('/rooms', params)
-    tableData.value = Array.isArray(result) ? result : []
+    allData.value = Array.isArray(result) ? result : []
+    updatePageData()
   } catch (error) {
     console.error(error)
     ElMessage.error('获取房间列表失败')
+    allData.value = []
     tableData.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
@@ -201,7 +213,7 @@ const form = reactive({
   RoomName: '',
   RoomNumber: '',
   BuildingID: 1,
-  FloorNo: 1,
+  Floor: 1,
   RoomType: '',
   SeatCount: 0,
   Area: 0,
@@ -222,7 +234,7 @@ const rules = reactive<FormRules>({
   BuildingID: [
     { required: true, message: '请选择所属楼宇', trigger: 'change' }
   ],
-  FloorNo: [
+  Floor: [
     { required: true, message: '请输入楼层', trigger: 'blur' }
   ],
   RoomType: [
@@ -258,7 +270,7 @@ const handleAdd = () => {
     RoomName: '',
     RoomNumber: '',
     BuildingID: buildingList.value[0]?.BuildingID || 1,
-    FloorNo: 1,
+    Floor: 1,
     RoomType: '',
     SeatCount: 0,
     Area: 0,
@@ -275,11 +287,11 @@ const handleEdit = (row: any) => {
     RoomID: row.RoomID,
     RoomCode: row.RoomCode,
     RoomName: row.RoomName,
-    RoomNumber: row.RoomNumber,
+    RoomNumber: row.RoomNumber || row.RoomCode,
     BuildingID: row.BuildingID,
-    FloorNo: row.FloorNo,
+    Floor: row.Floor,
     RoomType: row.RoomType,
-    SeatCount: row.SeatCount,
+    SeatCount: row.Capacity || row.SeatCount,
     Area: row.Area,
     IsAvailable: row.IsAvailable,
     Status: row.Status
@@ -312,11 +324,25 @@ const handleSubmit = async () => {
   formRef.value?.validate(async (valid) => {
     if (valid) {
       try {
+        // 转换字段名以匹配后端API和数据库
+        const submitData = {
+          RoomCode: form.RoomCode,
+          RoomName: form.RoomName,
+          BuildingID: form.BuildingID,
+          Floor: form.Floor,
+          Capacity: form.SeatCount,
+          Area: form.Area,
+          RoomType: form.RoomType,
+          Status: form.Status,
+          SortOrder: 0,
+          Description: '',
+          Equipment: ''
+        }
         if (isEdit.value) {
-          await put(`/rooms/${form.RoomID}`, { ...form })
+          await put(`/rooms/${form.RoomID}`, submitData)
           ElMessage.success('编辑成功')
         } else {
-          await post('/rooms', { ...form })
+          await post('/rooms', submitData)
           ElMessage.success('新增成功')
         }
         await fetchData()
@@ -336,10 +362,12 @@ const handleDialogClose = () => {
 const handleSizeChange = (size: number) => {
   pagination.pageSize = size
   pagination.page = 1
+  updatePageData()
 }
 
 const handleCurrentChange = (page: number) => {
   pagination.page = page
+  updatePageData()
 }
 
 onMounted(async () => {

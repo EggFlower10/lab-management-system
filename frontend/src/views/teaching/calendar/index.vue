@@ -21,14 +21,14 @@
       </template>
       <div class="calendar-container">
         <div class="calendar-header">
-          <h2>{{ currentSemester.semesterName || '请选择学期' }}</h2>
+          <h2>{{ currentSemester?.semesterName || '请选择学期' }}</h2>
           <div class="calendar-info">
-            <span>开始日期：{{ currentSemester.startDate || '--' }}</span>
-            <span>结束日期：{{ currentSemester.endDate || '--' }}</span>
-            <span>总周数：{{ currentSemester.weeks || 0 }}周</span>
+            <span>开始日期：{{ currentSemester?.startDate || '--' }}</span>
+            <span>结束日期：{{ currentSemester?.endDate || '--' }}</span>
+            <span>总周数：{{ currentSemester?.weeks || 0 }}周</span>
           </div>
         </div>
-        <div class="calendar-grid" v-if="currentSemester.semesterName">
+        <div class="calendar-grid" v-if="currentSemester && currentSemester.semesterName">
           <div class="week-header">
             <div class="week-cell">周次</div>
             <div class="week-cell">周一</div>
@@ -71,16 +71,16 @@
         </div>
       </div>
       
-      <!-- 节假日安排表格 -->
-      <div class="holiday-schedule" v-if="currentSemester.semesterName">
+      <!-- 假期和考试安排表格 -->
+      <div class="holiday-schedule" v-if="currentSemester && currentSemester.semesterName">
         <div class="schedule-header">
-          <h3>节假日安排</h3>
+          <h3>假期和考试安排</h3>
           <el-button type="primary" @click="handleAddHoliday">
-            <el-icon><Plus /></el-icon>新增节假日
+            <el-icon><Plus /></el-icon>新增安排
           </el-button>
         </div>
         <el-table
-          :data="filteredHolidays"
+          :data="pagedHolidays"
           border
           stripe
           style="width: 100%"
@@ -118,11 +118,11 @@
         </div>
       </div>
 
-      <!-- 节假日编辑对话框 -->
+      <!-- 假期和考试编辑对话框 -->
       <el-dialog v-model="holidayDialogVisible" :title="holidayDialogTitle" width="500px" @close="handleHolidayDialogClose">
         <el-form ref="holidayFormRef" :model="holidayForm" :rules="holidayRules" label-width="100px">
           <el-form-item label="名称" prop="name">
-            <el-input v-model="holidayForm.name" placeholder="请输入节假日名称" />
+            <el-input v-model="holidayForm.name" placeholder="请输入名称" />
           </el-form-item>
           <el-form-item label="开始日期" prop="startDate">
             <el-date-picker v-model="holidayForm.startDate" type="date" placeholder="选择开始日期" style="width: 100%" />
@@ -154,95 +154,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { Refresh, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
+import { get, post, put, del } from '@/utils/request'
 
-const semesterList = ref<any[]>([
-  {
-    id: 1,
-    semesterName: '2026-2027学年第一学期',
-    startDate: '2026-09-01',
-    endDate: '2027-01-15',
-    weeks: 20
-  },
-  {
-    id: 2,
-    semesterName: '2026-2027学年第二学期',
-    startDate: '2027-02-20',
-    endDate: '2027-06-30',
-    weeks: 20
-  },
-  {
-    id: 3,
-    semesterName: '2025-2026学年第一学期',
-    startDate: '2025-09-01',
-    endDate: '2026-01-15',
-    weeks: 20
-  },
-  {
-    id: 4,
-    semesterName: '2025-2026学年第二学期',
-    startDate: '2026-02-20',
-    endDate: '2026-06-30',
-    weeks: 20
-  },
-  {
-    id: 5,
-    semesterName: '2024-2025学年第一学期',
-    startDate: '2024-09-01',
-    endDate: '2025-01-15',
-    weeks: 20
-  },
-  {
-    id: 6,
-    semesterName: '2024-2025学年第二学期',
-    startDate: '2025-02-20',
-    endDate: '2025-06-30',
-    weeks: 20
-  }
-])
+const semesterList = ref<any[]>([])
+const loading = ref(false)
+const holidayLoading = ref(false)
 
-const selectedSemesterId = ref(1)
+const selectedSemesterId = ref<number | null>(null)
+
+const defaultSemester = {
+  id: 0,
+  semesterName: '',
+  startDate: '',
+  endDate: '',
+  weeks: 0
+}
 
 const currentSemester = computed(() => {
-  return semesterList.value.find(semester => semester.id === selectedSemesterId.value) || semesterList.value[0]
+  if (!semesterList.value || semesterList.value.length === 0) {
+    return defaultSemester
+  }
+  return semesterList.value.find(semester => semester.id === selectedSemesterId.value) || semesterList.value[0] || defaultSemester
 })
 
-// 节假日安排数据
-const holidaySchedule = ref([
-  // 2026-2027学年第一学期（2026-09-01 至 2027-01-15）
-  { id: 1, name: '中秋节', startDate: '2026-09-15', endDate: '2026-09-17', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 2, name: '国庆节', startDate: '2026-10-01', endDate: '2026-10-07', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 3, name: '元旦', startDate: '2026-12-31', endDate: '2027-01-02', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 4, name: '期末考试', startDate: '2026-12-26', endDate: '2027-01-06', type: '考试', isWorkday: true, remark: '期末考试周' },
-  { id: 5, name: '寒假', startDate: '2027-01-16', endDate: '2027-02-19', type: '假期', isWorkday: false, remark: '寒假假期' },
-  
-  // 2026-2027学年第二学期（2027-02-20 至 2027-06-30）
-  { id: 6, name: '春节', startDate: '2027-02-20', endDate: '2027-02-22', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 7, name: '清明节', startDate: '2027-04-05', endDate: '2027-04-07', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 8, name: '劳动节', startDate: '2027-05-01', endDate: '2027-05-05', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 9, name: '端午节', startDate: '2027-06-20', endDate: '2027-06-22', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 10, name: '暑假', startDate: '2027-07-01', endDate: '2027-08-31', type: '假期', isWorkday: false, remark: '暑期假期' },
-  
-  // 2025-2026学年第二学期（2026-02-20 至 2026-06-30）
-  { id: 11, name: '清明节', startDate: '2026-04-05', endDate: '2026-04-07', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 12, name: '劳动节', startDate: '2026-05-01', endDate: '2026-05-05', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 13, name: '端午节', startDate: '2026-06-20', endDate: '2026-06-22', type: '节假日', isWorkday: false, remark: '法定节假日' },
-  { id: 14, name: '暑假', startDate: '2026-07-01', endDate: '2026-08-31', type: '假期', isWorkday: false, remark: '暑期假期' },
-  { id: 15, name: '期末考试', startDate: '2026-07-01', endDate: '2026-07-10', type: '考试', isWorkday: true, remark: '期末考试周' }
-])
+// 节假日安排数据（从后端加载）
+const holidaySchedule = ref<any[]>([])
 
 // 过滤后的节假日数据（根据当前学期）
 const filteredHolidays = computed(() => {
   if (!currentSemester.value) return []
-  
-  const startDate = currentSemester.value.startDate
-  const endDate = currentSemester.value.endDate
-  
-  return holidaySchedule.value.filter(holiday => {
-    return holiday.startDate >= startDate && holiday.startDate <= endDate
-  })
+  return holidaySchedule.value
+})
+
+// 分页后的节假日数据
+const pagedHolidays = computed(() => {
+  const start = (pagination.current - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return filteredHolidays.value.slice(start, end)
 })
 
 // 分页数据
@@ -251,9 +202,25 @@ const pagination = reactive({
   pageSize: 10
 })
 
+// 监听分页数据，确保当前页不超出范围
+watch(
+  () => filteredHolidays.value.length,
+  () => {
+    const totalPages = Math.max(1, Math.ceil(filteredHolidays.value.length / pagination.pageSize))
+    if (pagination.current > totalPages) {
+      pagination.current = totalPages
+    }
+  }
+)
+
+// 监听学期变化，重置分页
+watch(selectedSemesterId, () => {
+  pagination.current = 1
+})
+
 // 节假日编辑对话框相关数据
 const holidayDialogVisible = ref(false)
-const holidayDialogTitle = ref('新增节假日')
+const holidayDialogTitle = ref('新增安排')
 const isHolidayEdit = ref(false)
 const holidayFormRef = ref<FormInstance>()
 
@@ -268,24 +235,80 @@ const holidayForm = reactive({
 })
 
 const holidayRules = reactive<FormRules>({
-  name: [{ required: true, message: '请输入节假日名称', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
   startDate: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
   endDate: [{ required: true, message: '请选择结束日期', trigger: 'change' }],
   type: [{ required: true, message: '请选择类型', trigger: 'change' }]
 })
 
-// 新增节假日
+// 加载学期列表
+const fetchSemesters = async () => {
+  try {
+    const result = await get('/semesters')
+    semesterList.value = (result || []).map((s: any) => ({
+      id: s.SemesterID || s.id,
+      semesterName: s.SemesterName || s.name,
+      startDate: s.StartDate ? String(s.StartDate).split(' ')[0] : '',
+      endDate: s.EndDate ? String(s.EndDate).split(' ')[0] : '',
+      weeks: s.TotalWeeks || 20
+    }))
+    if (semesterList.value.length > 0 && !selectedSemesterId.value) {
+      const active = semesterList.value.find(s => s.id) || semesterList.value[0]
+      selectedSemesterId.value = active.id
+    }
+  } catch (error) {
+    console.error('加载学期列表失败:', error)
+    ElMessage.error('加载学期列表失败')
+  }
+}
+
+// 加载节假日列表
+const fetchHolidays = async () => {
+  holidayLoading.value = true
+  try {
+    const result = await get('/holidays')
+    holidaySchedule.value = result || []
+    pagination.current = 1
+  } catch (error) {
+    console.error('加载节假日列表失败:', error)
+    ElMessage.error('加载节假日列表失败')
+    holidaySchedule.value = []
+  } finally {
+    holidayLoading.value = false
+  }
+}
+
+// 根据节假日生成日历用的日期-名称映射
+const holidays = computed(() => {
+  const result: { date: string, name: string }[] = []
+  holidaySchedule.value.forEach(h => {
+    if (!h.startDate || !h.endDate) return
+    const start = new Date(h.startDate)
+    const end = new Date(h.endDate)
+    const cur = new Date(start)
+    while (cur <= end) {
+      result.push({
+        date: cur.toISOString().split('T')[0],
+        name: h.name
+      })
+      cur.setDate(cur.getDate() + 1)
+    }
+  })
+  return result
+})
+
+// 新增安排
 const handleAddHoliday = () => {
   isHolidayEdit.value = false
-  holidayDialogTitle.value = '新增节假日'
+  holidayDialogTitle.value = '新增安排'
   resetHolidayForm()
   holidayDialogVisible.value = true
 }
 
-// 编辑节假日
+// 编辑安排
 const handleEditHoliday = (row: any) => {
   isHolidayEdit.value = true
-  holidayDialogTitle.value = '编辑节假日'
+  holidayDialogTitle.value = '编辑安排'
   holidayForm.id = row.id
   holidayForm.name = row.name
   holidayForm.startDate = row.startDate
@@ -296,22 +319,24 @@ const handleEditHoliday = (row: any) => {
   holidayDialogVisible.value = true
 }
 
-// 删除节假日
+// 删除安排
 const handleDeleteHoliday = (id: number) => {
-  ElMessageBox.confirm('确定要删除该节假日吗？', '提示', {
+  ElMessageBox.confirm('确定要删除该安排吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
-  }).then(() => {
-    const index = holidaySchedule.value.findIndex(item => item.id === id)
-    if (index !== -1) {
-      holidaySchedule.value.splice(index, 1)
+  }).then(async () => {
+    try {
+      await del(`/holidays/${id}`)
       ElMessage.success('删除成功')
+      await fetchHolidays()
+    } catch (error) {
+      ElMessage.error('删除失败')
     }
-  })
+  }).catch(() => {})
 }
 
-// 重置节假日表单
+// 重置表单
 const resetHolidayForm = () => {
   holidayForm.id = 0
   holidayForm.name = ''
@@ -327,32 +352,44 @@ const handleHolidayDialogClose = () => {
   holidayFormRef.value?.resetFields()
 }
 
+// 格式化日期为 YYYY-MM-DD
+const formatDate = (date: any): string => {
+  if (!date) return ''
+  if (typeof date === 'string') {
+    return date.split('T')[0]
+  }
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  return d.toISOString().split('T')[0]
+}
+
 // 处理节假日表单提交
 const handleHolidaySubmit = async () => {
   if (!holidayFormRef.value) return
   await holidayFormRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        const payload = {
+          Name: holidayForm.name,
+          StartDate: formatDate(holidayForm.startDate),
+          EndDate: formatDate(holidayForm.endDate),
+          Type: holidayForm.type,
+          IsWorkday: holidayForm.isWorkday,
+          Remark: holidayForm.remark,
+          Status: 1
+        }
         if (isHolidayEdit.value) {
-          // 更新现有节假日
-          const index = holidaySchedule.value.findIndex(item => item.id === holidayForm.id)
-          if (index !== -1) {
-            holidaySchedule.value[index] = { ...holidayForm }
-          }
+          await put(`/holidays/${holidayForm.id}`, payload)
           ElMessage.success('更新成功')
         } else {
-          // 新增节假日
-          const maxId = Math.max(...holidaySchedule.value.map(item => item.id))
-          const newHoliday = {
-            ...holidayForm,
-            id: maxId + 1
-          }
-          holidaySchedule.value.push(newHoliday)
+          await post('/holidays', payload)
           ElMessage.success('创建成功')
         }
         holidayDialogVisible.value = false
+        await fetchHolidays()
       } catch (error) {
         console.error(error)
+        ElMessage.error(isHolidayEdit.value ? '更新失败' : '创建失败')
       }
     }
   })
@@ -368,429 +405,15 @@ const handleCurrentChange = (page: number) => {
   pagination.current = page
 }
 
-// 节假日数据（按学期分类）
-const holidays = ref([
-  // 2025-2026学年第二学期（2026-02-20 至 2026-06-30）
-  { date: '2026-02-20', name: '春节' },
-  { date: '2026-02-21', name: '春节' },
-  { date: '2026-02-22', name: '春节' },
-  { date: '2026-04-05', name: '清明节' },
-  { date: '2026-05-01', name: '劳动节' },
-  { date: '2026-06-20', name: '端午节' },
-  { date: '2026-07-01', name: '暑假' },
-  { date: '2026-07-02', name: '暑假' },
-  { date: '2026-07-03', name: '暑假' },
-  { date: '2026-07-04', name: '暑假' },
-  { date: '2026-07-05', name: '暑假' },
-  { date: '2026-07-06', name: '暑假' },
-  { date: '2026-07-07', name: '暑假' },
-  { date: '2026-07-08', name: '暑假' },
-  { date: '2026-07-09', name: '暑假' },
-  { date: '2026-07-10', name: '暑假' },
-  { date: '2026-07-11', name: '暑假' },
-  { date: '2026-07-12', name: '暑假' },
-  { date: '2026-07-13', name: '暑假' },
-  { date: '2026-07-14', name: '暑假' },
-  { date: '2026-07-15', name: '暑假' },
-  { date: '2026-07-16', name: '暑假' },
-  { date: '2026-07-17', name: '暑假' },
-  { date: '2026-07-18', name: '暑假' },
-  { date: '2026-07-19', name: '暑假' },
-  { date: '2026-07-20', name: '暑假' },
-  { date: '2026-07-21', name: '暑假' },
-  { date: '2026-07-22', name: '暑假' },
-  { date: '2026-07-23', name: '暑假' },
-  { date: '2026-07-24', name: '暑假' },
-  { date: '2026-07-25', name: '暑假' },
-  { date: '2026-07-26', name: '暑假' },
-  { date: '2026-07-27', name: '暑假' },
-  { date: '2026-07-28', name: '暑假' },
-  { date: '2026-07-29', name: '暑假' },
-  { date: '2026-07-30', name: '暑假' },
-  { date: '2026-07-31', name: '暑假' },
-  { date: '2026-08-01', name: '暑假' },
-  { date: '2026-08-02', name: '暑假' },
-  { date: '2026-08-03', name: '暑假' },
-  { date: '2026-08-04', name: '暑假' },
-  { date: '2026-08-05', name: '暑假' },
-  { date: '2026-08-06', name: '暑假' },
-  { date: '2026-08-07', name: '暑假' },
-  { date: '2026-08-08', name: '暑假' },
-  { date: '2026-08-09', name: '暑假' },
-  { date: '2026-08-10', name: '暑假' },
-  { date: '2026-08-11', name: '暑假' },
-  { date: '2026-08-12', name: '暑假' },
-  { date: '2026-08-13', name: '暑假' },
-  { date: '2026-08-14', name: '暑假' },
-  { date: '2026-08-15', name: '暑假' },
-  { date: '2026-08-16', name: '暑假' },
-  { date: '2026-08-17', name: '暑假' },
-  { date: '2026-08-18', name: '暑假' },
-  { date: '2026-08-19', name: '暑假' },
-  { date: '2026-08-20', name: '暑假' },
-  { date: '2026-08-21', name: '暑假' },
-  { date: '2026-08-22', name: '暑假' },
-  { date: '2026-08-23', name: '暑假' },
-  { date: '2026-08-24', name: '暑假' },
-  { date: '2026-08-25', name: '暑假' },
-  { date: '2026-08-26', name: '暑假' },
-  { date: '2026-08-27', name: '暑假' },
-  { date: '2026-08-28', name: '暑假' },
-  { date: '2026-08-29', name: '暑假' },
-  { date: '2026-08-30', name: '暑假' },
-  { date: '2026-08-31', name: '暑假' },
-  
-  // 2025-2026学年第一学期（2025-09-01 至 2026-01-15）
-  { date: '2025-09-15', name: '中秋节' },
-  { date: '2025-10-01', name: '国庆节' },
-  { date: '2025-10-02', name: '国庆节' },
-  { date: '2025-10-03', name: '国庆节' },
-  { date: '2025-10-04', name: '国庆节' },
-  { date: '2025-10-05', name: '国庆节' },
-  { date: '2025-10-06', name: '国庆节' },
-  { date: '2025-10-07', name: '国庆节' },
-  { date: '2025-12-31', name: '元旦' },
-  { date: '2026-01-01', name: '元旦' },
-  { date: '2026-01-02', name: '元旦' },
-  { date: '2026-01-16', name: '寒假' },
-  { date: '2026-01-17', name: '寒假' },
-  { date: '2026-01-18', name: '寒假' },
-  { date: '2026-01-19', name: '寒假' },
-  { date: '2026-01-20', name: '寒假' },
-  { date: '2026-01-21', name: '寒假' },
-  { date: '2026-01-22', name: '寒假' },
-  { date: '2026-01-23', name: '寒假' },
-  { date: '2026-01-24', name: '寒假' },
-  { date: '2026-01-25', name: '寒假' },
-  { date: '2026-01-26', name: '寒假' },
-  { date: '2026-01-27', name: '寒假' },
-  { date: '2026-01-28', name: '寒假' },
-  { date: '2026-01-29', name: '寒假' },
-  { date: '2026-01-30', name: '寒假' },
-  { date: '2026-01-31', name: '寒假' },
-  { date: '2026-02-01', name: '寒假' },
-  { date: '2026-02-02', name: '寒假' },
-  { date: '2026-02-03', name: '寒假' },
-  { date: '2026-02-04', name: '寒假' },
-  { date: '2026-02-05', name: '寒假' },
-  { date: '2026-02-06', name: '寒假' },
-  { date: '2026-02-07', name: '寒假' },
-  { date: '2026-02-08', name: '寒假' },
-  { date: '2026-02-09', name: '寒假' },
-  { date: '2026-02-10', name: '寒假' },
-  { date: '2026-02-11', name: '寒假' },
-  { date: '2026-02-12', name: '寒假' },
-  { date: '2026-02-13', name: '寒假' },
-  { date: '2026-02-14', name: '寒假' },
-  { date: '2026-02-15', name: '寒假' },
-  { date: '2026-02-16', name: '寒假' },
-  { date: '2026-02-17', name: '寒假' },
-  
-  // 2026-2027学年第一学期（2026-09-01 至 2027-01-15）
-  { date: '2026-09-15', name: '中秋节' },
-  { date: '2026-10-01', name: '国庆节' },
-  { date: '2026-10-02', name: '国庆节' },
-  { date: '2026-10-03', name: '国庆节' },
-  { date: '2026-10-04', name: '国庆节' },
-  { date: '2026-10-05', name: '国庆节' },
-  { date: '2026-10-06', name: '国庆节' },
-  { date: '2026-10-07', name: '国庆节' },
-  { date: '2026-12-31', name: '元旦' },
-  { date: '2027-01-01', name: '元旦' },
-  { date: '2027-01-02', name: '元旦' },
-  { date: '2027-01-16', name: '寒假' },
-  { date: '2027-01-17', name: '寒假' },
-  { date: '2027-01-18', name: '寒假' },
-  { date: '2027-01-19', name: '寒假' },
-  { date: '2027-01-20', name: '寒假' },
-  { date: '2027-01-21', name: '寒假' },
-  { date: '2027-01-22', name: '寒假' },
-  { date: '2027-01-23', name: '寒假' },
-  { date: '2027-01-24', name: '寒假' },
-  { date: '2027-01-25', name: '寒假' },
-  { date: '2027-01-26', name: '寒假' },
-  { date: '2027-01-27', name: '寒假' },
-  { date: '2027-01-28', name: '寒假' },
-  { date: '2027-01-29', name: '寒假' },
-  { date: '2027-01-30', name: '寒假' },
-  { date: '2027-01-31', name: '寒假' },
-  { date: '2027-02-01', name: '寒假' },
-  { date: '2027-02-02', name: '寒假' },
-  { date: '2027-02-03', name: '寒假' },
-  { date: '2027-02-04', name: '寒假' },
-  { date: '2027-02-05', name: '寒假' },
-  { date: '2027-02-06', name: '寒假' },
-  { date: '2027-02-07', name: '寒假' },
-  { date: '2027-02-08', name: '寒假' },
-  { date: '2027-02-09', name: '寒假' },
-  { date: '2027-02-10', name: '寒假' },
-  { date: '2027-02-11', name: '寒假' },
-  { date: '2027-02-12', name: '寒假' },
-  { date: '2027-02-13', name: '寒假' },
-  { date: '2027-02-14', name: '寒假' },
-  { date: '2027-02-15', name: '寒假' },
-  { date: '2027-02-16', name: '寒假' },
-  { date: '2027-02-17', name: '寒假' },
-  
-  // 2026-2027学年第二学期（2027-02-20 至 2027-06-30）
-  { date: '2027-02-20', name: '春节' },
-  { date: '2027-02-21', name: '春节' },
-  { date: '2027-02-22', name: '春节' },
-  { date: '2027-04-05', name: '清明节' },
-  { date: '2027-05-01', name: '劳动节' },
-  { date: '2027-06-20', name: '端午节' },
-  { date: '2027-07-01', name: '暑假' },
-  { date: '2027-07-02', name: '暑假' },
-  { date: '2027-07-03', name: '暑假' },
-  { date: '2027-07-04', name: '暑假' },
-  { date: '2027-07-05', name: '暑假' },
-  { date: '2027-07-06', name: '暑假' },
-  { date: '2027-07-07', name: '暑假' },
-  { date: '2027-07-08', name: '暑假' },
-  { date: '2027-07-09', name: '暑假' },
-  { date: '2027-07-10', name: '暑假' },
-  { date: '2027-07-11', name: '暑假' },
-  { date: '2027-07-12', name: '暑假' },
-  { date: '2027-07-13', name: '暑假' },
-  { date: '2027-07-14', name: '暑假' },
-  { date: '2027-07-15', name: '暑假' },
-  { date: '2027-07-16', name: '暑假' },
-  { date: '2027-07-17', name: '暑假' },
-  { date: '2027-07-18', name: '暑假' },
-  { date: '2027-07-19', name: '暑假' },
-  { date: '2027-07-20', name: '暑假' },
-  { date: '2027-07-21', name: '暑假' },
-  { date: '2027-07-22', name: '暑假' },
-  { date: '2027-07-23', name: '暑假' },
-  { date: '2027-07-24', name: '暑假' },
-  { date: '2027-07-25', name: '暑假' },
-  { date: '2027-07-26', name: '暑假' },
-  { date: '2027-07-27', name: '暑假' },
-  { date: '2027-07-28', name: '暑假' },
-  { date: '2027-07-29', name: '暑假' },
-  { date: '2027-07-30', name: '暑假' },
-  { date: '2027-07-31', name: '暑假' },
-  { date: '2027-08-01', name: '暑假' },
-  { date: '2027-08-02', name: '暑假' },
-  { date: '2027-08-03', name: '暑假' },
-  { date: '2027-08-04', name: '暑假' },
-  { date: '2027-08-05', name: '暑假' },
-  { date: '2027-08-06', name: '暑假' },
-  { date: '2027-08-07', name: '暑假' },
-  { date: '2027-08-08', name: '暑假' },
-  { date: '2027-08-09', name: '暑假' },
-  { date: '2027-08-10', name: '暑假' },
-  { date: '2027-08-11', name: '暑假' },
-  { date: '2027-08-12', name: '暑假' },
-  { date: '2027-08-13', name: '暑假' },
-  { date: '2027-08-14', name: '暑假' },
-  { date: '2027-08-15', name: '暑假' },
-  { date: '2027-08-16', name: '暑假' },
-  { date: '2027-08-17', name: '暑假' },
-  { date: '2027-08-18', name: '暑假' },
-  { date: '2027-08-19', name: '暑假' },
-  { date: '2027-08-20', name: '暑假' },
-  { date: '2027-08-21', name: '暑假' },
-  { date: '2027-08-22', name: '暑假' },
-  { date: '2027-08-23', name: '暑假' },
-  { date: '2027-08-24', name: '暑假' },
-  { date: '2027-08-25', name: '暑假' },
-  { date: '2027-08-26', name: '暑假' },
-  { date: '2027-08-27', name: '暑假' },
-  { date: '2027-08-28', name: '暑假' },
-  { date: '2027-08-29', name: '暑假' },
-  { date: '2027-08-30', name: '暑假' },
-  { date: '2027-08-31', name: '暑假' },
-  
-  // 2024-2025学年第一学期（2024-09-01 至 2025-01-15）
-  { date: '2024-09-15', name: '中秋节' },
-  { date: '2024-10-01', name: '国庆节' },
-  { date: '2024-10-02', name: '国庆节' },
-  { date: '2024-10-03', name: '国庆节' },
-  { date: '2024-10-04', name: '国庆节' },
-  { date: '2024-10-05', name: '国庆节' },
-  { date: '2024-10-06', name: '国庆节' },
-  { date: '2024-10-07', name: '国庆节' },
-  { date: '2024-12-31', name: '元旦' },
-  { date: '2025-01-01', name: '元旦' },
-  { date: '2025-01-02', name: '元旦' },
-  { date: '2025-01-16', name: '寒假' },
-  { date: '2025-01-17', name: '寒假' },
-  { date: '2025-01-18', name: '寒假' },
-  { date: '2025-01-19', name: '寒假' },
-  { date: '2025-01-20', name: '寒假' },
-  { date: '2025-01-21', name: '寒假' },
-  { date: '2025-01-22', name: '寒假' },
-  { date: '2025-01-23', name: '寒假' },
-  { date: '2025-01-24', name: '寒假' },
-  { date: '2025-01-25', name: '寒假' },
-  { date: '2025-01-26', name: '寒假' },
-  { date: '2025-01-27', name: '寒假' },
-  { date: '2025-01-28', name: '寒假' },
-  { date: '2025-01-29', name: '寒假' },
-  { date: '2025-01-30', name: '寒假' },
-  { date: '2025-01-31', name: '寒假' },
-  { date: '2025-02-01', name: '寒假' },
-  { date: '2025-02-02', name: '寒假' },
-  { date: '2025-02-03', name: '寒假' },
-  { date: '2025-02-04', name: '寒假' },
-  { date: '2025-02-05', name: '寒假' },
-  { date: '2025-02-06', name: '寒假' },
-  { date: '2025-02-07', name: '寒假' },
-  { date: '2025-02-08', name: '寒假' },
-  { date: '2025-02-09', name: '寒假' },
-  { date: '2025-02-10', name: '寒假' },
-  { date: '2025-02-11', name: '寒假' },
-  { date: '2025-02-12', name: '寒假' },
-  { date: '2025-02-13', name: '寒假' },
-  { date: '2025-02-14', name: '寒假' },
-  { date: '2025-02-15', name: '寒假' },
-  { date: '2025-02-16', name: '寒假' },
-  { date: '2025-02-17', name: '寒假' },
-  
-  // 2024-2025学年第二学期（2025-02-20 至 2025-06-30）
-  { date: '2025-02-20', name: '春节' },
-  { date: '2025-02-21', name: '春节' },
-  { date: '2025-02-22', name: '春节' },
-  { date: '2025-04-05', name: '清明节' },
-  { date: '2025-05-01', name: '劳动节' },
-  { date: '2025-06-20', name: '端午节' },
-  { date: '2025-07-01', name: '暑假' },
-  { date: '2025-07-02', name: '暑假' },
-  { date: '2025-07-03', name: '暑假' },
-  { date: '2025-07-04', name: '暑假' },
-  { date: '2025-07-05', name: '暑假' },
-  { date: '2025-07-06', name: '暑假' },
-  { date: '2025-07-07', name: '暑假' },
-  { date: '2025-07-08', name: '暑假' },
-  { date: '2025-07-09', name: '暑假' },
-  { date: '2025-07-10', name: '暑假' },
-  { date: '2025-07-11', name: '暑假' },
-  { date: '2025-07-12', name: '暑假' },
-  { date: '2025-07-13', name: '暑假' },
-  { date: '2025-07-14', name: '暑假' },
-  { date: '2025-07-15', name: '暑假' },
-  { date: '2025-07-16', name: '暑假' },
-  { date: '2025-07-17', name: '暑假' },
-  { date: '2025-07-18', name: '暑假' },
-  { date: '2025-07-19', name: '暑假' },
-  { date: '2025-07-20', name: '暑假' },
-  { date: '2025-07-21', name: '暑假' },
-  { date: '2025-07-22', name: '暑假' },
-  { date: '2025-07-23', name: '暑假' },
-  { date: '2025-07-24', name: '暑假' },
-  { date: '2025-07-25', name: '暑假' },
-  { date: '2025-07-26', name: '暑假' },
-  { date: '2025-07-27', name: '暑假' },
-  { date: '2025-07-28', name: '暑假' },
-  { date: '2025-07-29', name: '暑假' },
-  { date: '2025-07-30', name: '暑假' },
-  { date: '2025-07-31', name: '暑假' },
-  { date: '2025-08-01', name: '暑假' },
-  { date: '2025-08-02', name: '暑假' },
-  { date: '2025-08-03', name: '暑假' },
-  { date: '2025-08-04', name: '暑假' },
-  { date: '2025-08-05', name: '暑假' },
-  { date: '2025-08-06', name: '暑假' },
-  { date: '2025-08-07', name: '暑假' },
-  { date: '2025-08-08', name: '暑假' },
-  { date: '2025-08-09', name: '暑假' },
-  { date: '2025-08-10', name: '暑假' },
-  { date: '2025-08-11', name: '暑假' },
-  { date: '2025-08-12', name: '暑假' },
-  { date: '2025-08-13', name: '暑假' },
-  { date: '2025-08-14', name: '暑假' },
-  { date: '2025-08-15', name: '暑假' },
-  { date: '2025-08-16', name: '暑假' },
-  { date: '2025-08-17', name: '暑假' },
-  { date: '2025-08-18', name: '暑假' },
-  { date: '2025-08-19', name: '暑假' },
-  { date: '2025-08-20', name: '暑假' },
-  { date: '2025-08-21', name: '暑假' },
-  { date: '2025-08-22', name: '暑假' },
-  { date: '2025-08-23', name: '暑假' },
-  { date: '2025-08-24', name: '暑假' },
-  { date: '2025-08-25', name: '暑假' },
-  { date: '2025-08-26', name: '暑假' },
-  { date: '2025-08-27', name: '暑假' },
-  { date: '2025-08-28', name: '暑假' },
-  { date: '2025-08-29', name: '暑假' },
-  { date: '2025-08-30', name: '暑假' },
-  { date: '2025-08-31', name: '暑假' }
-])
-
-// 调休数据（按学期分类）
-const workdays = ref([
-  // 2026-2027学年第一学期
-  { date: '2026-09-14', name: '调休' },
-  { date: '2026-09-27', name: '调休' },
-  { date: '2026-10-08', name: '调休' },
-  { date: '2026-10-11', name: '调休' },
-  { date: '2026-12-28', name: '调休' },
-  { date: '2026-12-30', name: '调休' },
-  
-  // 2026-2027学年第二学期
-  { date: '2027-02-18', name: '调休' },
-  { date: '2027-02-19', name: '调休' },
-  { date: '2027-04-06', name: '调休' },
-  { date: '2027-04-30', name: '调休' },
-  { date: '2027-05-02', name: '调休' },
-  { date: '2027-06-19', name: '调休' },
-  
-  // 2025-2026学年第一学期
-  { date: '2025-09-14', name: '调休' },
-  { date: '2025-09-27', name: '调休' },
-  { date: '2025-10-08', name: '调休' },
-  { date: '2025-10-11', name: '调休' },
-  { date: '2025-12-28', name: '调休' },
-  { date: '2025-12-30', name: '调休' },
-  
-  // 2025-2026学年第二学期
-  { date: '2026-02-18', name: '调休' },
-  { date: '2026-02-19', name: '调休' },
-  { date: '2026-04-06', name: '调休' },
-  { date: '2026-04-30', name: '调休' },
-  { date: '2026-05-02', name: '调休' },
-  { date: '2026-06-19', name: '调休' },
-  
-  // 2024-2025学年第一学期
-  { date: '2024-09-14', name: '调休' },
-  { date: '2024-09-27', name: '调休' },
-  { date: '2024-10-08', name: '调休' },
-  { date: '2024-10-11', name: '调休' },
-  { date: '2024-12-28', name: '调休' },
-  { date: '2024-12-30', name: '调休' },
-  
-  // 2024-2025学年第二学期
-  { date: '2025-02-18', name: '调休' },
-  { date: '2025-02-19', name: '调休' },
-  { date: '2025-04-06', name: '调休' },
-  { date: '2025-04-30', name: '调休' },
-  { date: '2025-05-02', name: '调休' },
-  { date: '2025-06-19', name: '调休' }
-])
-
-// 考试安排数据
-const examSchedule = ref([
-  { id: 1, week: 18, day: 1, name: '期末考试', type: 'exam' },
-  { id: 2, week: 18, day: 2, name: '期末考试', type: 'exam' },
-  { id: 3, week: 18, day: 3, name: '期末考试', type: 'exam' },
-  { id: 4, week: 18, day: 4, name: '期末考试', type: 'exam' },
-  { id: 5, week: 18, day: 5, name: '期末考试', type: 'exam' },
-  { id: 6, week: 19, day: 1, name: '期末考试', type: 'exam' },
-  { id: 7, week: 19, day: 2, name: '期末考试', type: 'exam' },
-  { id: 8, week: 19, day: 3, name: '期末考试', type: 'exam' }
-])
-
 // 计算某周的日期
 const getWeekDays = (week: number) => {
-  if (!currentSemester.value) return []
-  
+  if (!currentSemester.value || !currentSemester.value.startDate) return []
+
   const startDate = new Date(currentSemester.value.startDate)
-  // 计算第week周的开始日期（周一）
+  if (isNaN(startDate.getTime())) return []
   const weekStart = new Date(startDate)
   weekStart.setDate(startDate.getDate() + (week - 1) * 7)
-  
+
   const days = []
   for (let i = 0; i < 7; i++) {
     const date = new Date(weekStart)
@@ -807,7 +430,7 @@ const isHoliday = (date: string) => {
 
 // 判断是否是调休日
 const isWorkday = (date: string) => {
-  return workdays.value.some(workday => workday.date === date)
+  return holidaySchedule.value.some(h => h.isWorkday && h.startDate && h.endDate && date >= h.startDate && date <= h.endDate)
 }
 
 // 获取节假日名称
@@ -818,19 +441,37 @@ const getHolidayName = (date: string) => {
 
 // 获取调休日名称
 const getWorkdayName = (date: string) => {
-  const workday = workdays.value.find(workday => workday.date === date)
-  return workday ? workday.name : ''
+  if (isWorkday(date)) return '调休'
+  return ''
 }
 
-// 获取某天的事件
+// 获取某天的事件（考试安排）
 const getEvents = (week: number, day: number) => {
-  return examSchedule.value.filter(item => item.week === week && item.day === day + 1)
+  const weekDays = getWeekDays(week)
+  if (!weekDays[day]) return []
+  
+  const date = weekDays[day]
+  const events = holidaySchedule.value
+    .filter(h => h.type === '考试' && h.startDate && h.endDate && date >= h.startDate && date <= h.endDate)
+    .map(h => ({ id: h.id, week, day: day + 1, name: h.name, type: 'exam' }))
+  
+  return events
 }
 
-const handleRefresh = () => {
-  // 刷新校历数据
-  console.log('刷新校历')
+const handleRefresh = async () => {
+  loading.value = true
+  try {
+    await fetchSemesters()
+    await fetchHolidays()
+  } finally {
+    loading.value = false
+  }
 }
+
+onMounted(async () => {
+  await fetchSemesters()
+  await fetchHolidays()
+})
 </script>
 
 <style scoped>

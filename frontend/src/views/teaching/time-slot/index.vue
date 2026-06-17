@@ -7,13 +7,13 @@
           <div class="header-right">
             <el-select v-model="searchParams.name" placeholder="节次名称" class="search-input" clearable>
               <el-option label="全部节次" value="" />
-              <el-option v-for="option in sectionOptions" :key="option.value" :label="option.label" :value="option.label" />
+              <el-option v-for="item in timeSlots" :key="item.id" :label="item.name" :value="item.name" />
             </el-select>
             <el-select v-model="searchParams.period" placeholder="时段" class="search-select">
               <el-option label="全部时段" value="" />
-              <el-option label="上午" value="上午" />
-              <el-option label="下午" value="下午" />
-              <el-option label="晚上" value="晚上" />
+              <el-option label="上午" value="morning" />
+              <el-option label="下午" value="afternoon" />
+              <el-option label="晚上" value="evening" />
             </el-select>
             <el-button type="success" @click="handleSearch" class="search-button">
               <el-icon><Search /></el-icon>搜索
@@ -28,7 +28,7 @@
         </div>
       </template>
       <el-table
-        :data="tableData"
+        :data="pagedData"
         v-loading="loading"
         border
         stripe
@@ -80,15 +80,13 @@
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" @close="handleDialogClose">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="节次名称" prop="name">
-          <el-select v-model="form.name" placeholder="请选择节次名称">
-            <el-option v-for="option in sectionOptions" :key="option.value" :label="option.label" :value="option.label" />
-          </el-select>
+          <el-input v-model="form.name" placeholder="如：第1-2节" />
         </el-form-item>
         <el-form-item label="起止节" prop="startSection">
           <div class="section-range">
-            <el-input v-model.number="form.startSection" type="number" placeholder="开始节" class="section-input" disabled />
+            <el-input v-model.number="form.startSection" type="number" placeholder="开始节" class="section-input" />
             <span class="section-separator">-</span>
-            <el-input v-model.number="form.endSection" type="number" placeholder="结束节" class="section-input" disabled />
+            <el-input v-model.number="form.endSection" type="number" placeholder="结束节" class="section-input" />
           </div>
         </el-form-item>
         <el-form-item label="开始时间" prop="startTime">
@@ -99,9 +97,9 @@
         </el-form-item>
         <el-form-item label="时段" prop="period">
           <el-select v-model="form.period" placeholder="请选择时段">
-            <el-option label="上午" value="上午" />
-            <el-option label="下午" value="下午" />
-            <el-option label="晚上" value="晚上" />
+            <el-option label="上午" value="morning" />
+            <el-option label="下午" value="afternoon" />
+            <el-option label="晚上" value="evening" />
           </el-select>
         </el-form-item>
         <el-form-item label="排序" prop="sort">
@@ -116,113 +114,54 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Search, Refresh, Plus } from '@element-plus/icons-vue'
+import request from '@/utils/request'
 
 const loading = ref(false)
+const submitLoading = ref(false)
 const dialogVisible = ref(false)
 const dialogTitle = ref('新增节次')
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 
-// 节次选项
-const sectionOptions = ref([
-  { label: '第1-2节', value: '1-2', start: 1, end: 2 },
-  { label: '第3-4节', value: '3-4', start: 3, end: 4 },
-  { label: '第5-6节', value: '5-6', start: 5, end: 6 },
-  { label: '第7-8节', value: '7-8', start: 7, end: 8 },
-  { label: '第9-10节', value: '9-10', start: 9, end: 10 },
-  { label: '第11-12节', value: '11-12', start: 11, end: 12 }
-])
-
-const originalTableData = ref<any[]>([
-  {
-    id: 1,
-    name: '第1-2节',
-    startSection: 1,
-    endSection: 2,
-    startTime: '08:00',
-    endTime: '09:40',
-    period: '上午',
-    sort: 1,
-    status: 1
-  },
-  {
-    id: 2,
-    name: '第3-4节',
-    startSection: 3,
-    endSection: 4,
-    startTime: '10:00',
-    endTime: '11:40',
-    period: '上午',
-    sort: 2,
-    status: 1
-  },
-  {
-    id: 3,
-    name: '第5-6节',
-    startSection: 5,
-    endSection: 6,
-    startTime: '14:00',
-    endTime: '15:40',
-    period: '下午',
-    sort: 3,
-    status: 1
-  },
-  {
-    id: 4,
-    name: '第7-8节',
-    startSection: 7,
-    endSection: 8,
-    startTime: '16:00',
-    endTime: '17:40',
-    period: '下午',
-    sort: 4,
-    status: 1
-  },
-  {
-    id: 5,
-    name: '第9-10节',
-    startSection: 9,
-    endSection: 10,
-    startTime: '19:00',
-    endTime: '20:40',
-    period: '晚上',
-    sort: 5,
-    status: 1
-  },
-  {
-    id: 6,
-    name: '第11-12节',
-    startSection: 11,
-    endSection: 12,
-    startTime: '20:50',
-    endTime: '22:30',
-    period: '晚上',
-    sort: 6,
-    status: 1
-  }
-])
-
-const tableData = ref<any[]>([...originalTableData.value])
+// 节次列表（来自数据库）
+const timeSlots = ref<any[]>([])
 
 const searchParams = reactive({
   name: '',
   period: ''
 })
 
-const pagination = reactive({ 
-  page: 1, 
-  pageSize: 10, 
-  total: 100 
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
+
+// 前端过滤后的数据
+const filteredData = computed(() => {
+  return timeSlots.value.filter(item => {
+    const nameMatch = !searchParams.name || String(item.name).includes(searchParams.name)
+    // period 可能是中文(period字段)或英文(type字段)，统一比较
+    const periodValue = item.period || item.type
+    const periodMatch = !searchParams.period || periodValue === searchParams.period
+    return nameMatch && periodMatch
+  })
+})
+
+// 分页后的数据
+const pagedData = computed(() => {
+  const start = (pagination.page - 1) * pagination.pageSize
+  return filteredData.value.slice(start, start + pagination.pageSize)
 })
 
 const form = reactive({
@@ -232,23 +171,14 @@ const form = reactive({
   endSection: 2,
   startTime: '',
   endTime: '',
-  period: '上午',
+  period: 'morning',
   sort: 0,
   status: 1
 })
 
-// 监听节次名称变化，自动更新起止节
-watch(() => form.name, (newName) => {
-  const selectedOption = sectionOptions.value.find(option => option.label === newName)
-  if (selectedOption) {
-    form.startSection = selectedOption.start
-    form.endSection = selectedOption.end
-  }
-})
-
 const rules = reactive<FormRules>({
   name: [
-    { required: true, message: '请选择节次名称', trigger: 'change' }
+    { required: true, message: '请输入节次名称', trigger: 'blur' }
   ],
   startSection: [
     { required: true, message: '请输入开始节', trigger: 'blur' }
@@ -270,28 +200,40 @@ const rules = reactive<FormRules>({
   ]
 })
 
+const fetchTimeSlots = async () => {
+  loading.value = true
+  try {
+    const res: any = await request({
+        url: '/time-slots',
+        method: 'get'
+      })
+    timeSlots.value = Array.isArray(res) ? res : []
+    pagination.total = timeSlots.value.length
+  } catch (error) {
+    console.error('获取节次列表失败:', error)
+    ElMessage.error('获取节次列表失败')
+    timeSlots.value = []
+    pagination.total = 0
+  } finally {
+    loading.value = false
+  }
+}
+
 const handleSearch = () => {
-  const filteredData = originalTableData.value.filter(item => {
-    const nameMatch = !searchParams.name || item.name.includes(searchParams.name)
-    const periodMatch = !searchParams.period || item.period === searchParams.period
-    return nameMatch && periodMatch
-  })
-  
-  tableData.value = filteredData
-  pagination.total = filteredData.length
-  
-  if (filteredData.length === 0) {
+  pagination.page = 1
+  pagination.total = filteredData.value.length
+  if (filteredData.value.length === 0) {
     ElMessage.info('未找到匹配的节次')
   } else {
-    ElMessage.success(`搜索成功，找到 ${filteredData.length} 条记录`)
+    ElMessage.success(`搜索成功，找到 ${filteredData.value.length} 条记录`)
   }
 }
 
 const handleReset = () => {
   searchParams.name = ''
   searchParams.period = ''
-  tableData.value = [...originalTableData.value]
-  pagination.total = 100
+  pagination.page = 1
+  pagination.total = timeSlots.value.length
 }
 
 const handleAdd = () => {
@@ -302,9 +244,9 @@ const handleAdd = () => {
     name: '',
     startSection: 1,
     endSection: 2,
-    startTime: '',
-    endTime: '',
-    period: '上午',
+    startTime: null,
+    endTime: null,
+    period: 'morning',
     sort: 0,
     status: 1
   })
@@ -314,7 +256,20 @@ const handleAdd = () => {
 const handleEdit = (row: any) => {
   isEdit.value = true
   dialogTitle.value = '编辑节次'
-  Object.assign(form, row)
+  // period 后端返回为中文，需要转为后端存储的英文值
+  const periodMap: Record<string, string> = { '上午': 'morning', '下午': 'afternoon', '晚上': 'evening' }
+  const periodValue = periodMap[row.period] || row.period || row.type || 'morning'
+  Object.assign(form, {
+    id: row.id,
+    name: row.name,
+    startSection: row.startSection,
+    endSection: row.endSection,
+    startTime: row.startTime,
+    endTime: row.endTime,
+    period: periodValue,
+    sort: row.sort,
+    status: row.status
+  })
   dialogVisible.value = true
 }
 
@@ -327,33 +282,60 @@ const handleDelete = (row: any) => {
       cancelButtonText: '取消',
       type: 'warning'
     }
-  ).then(() => {
-    const index = tableData.value.findIndex(item => item.id === row.id)
-    if (index !== -1) {
-      tableData.value.splice(index, 1)
+  ).then(async () => {
+    try {
+      await request({
+        url: `/time-slots/${row.id}`,
+        method: 'delete'
+      })
       ElMessage.success('删除成功')
+      await fetchTimeSlots()
+      pagination.total = filteredData.value.length
+    } catch (error: any) {
+      console.error('删除节次失败:', error)
+      ElMessage.error(error?.response?.data?.message || '删除失败')
     }
   }).catch(() => {})
 }
 
 const handleSubmit = () => {
-  formRef.value?.validate((valid) => {
-    if (valid) {
-      if (isEdit.value) {
-        const index = tableData.value.findIndex(item => item.id === form.id)
-        if (index !== -1) {
-          tableData.value[index] = { ...form }
-          ElMessage.success('编辑成功')
-        }
-      } else {
-        const newId = Math.max(...tableData.value.map(item => item.id)) + 1
-        tableData.value.push({
-          ...form,
-          id: newId
-        })
-        ElMessage.success('新增成功')
+  formRef.value?.validate(async (valid) => {
+    if (!valid) return
+    submitLoading.value = true
+    try {
+      const payload = {
+        name: form.name,
+        startSection: form.startSection,
+        endSection: form.endSection,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        sort: form.sort,
+        period: form.period,
+        status: form.status
       }
+      let res: any
+      if (isEdit.value) {
+        res = await request({
+          url: `/time-slots/${form.id}`,
+          method: 'put',
+          data: payload
+        })
+      } else {
+        res = await request({
+          url: '/time-slots',
+          method: 'post',
+          data: payload
+        })
+      }
+      ElMessage.success(isEdit.value ? '编辑成功' : '新增成功')
       dialogVisible.value = false
+      await fetchTimeSlots()
+      pagination.total = filteredData.value.length
+    } catch (error: any) {
+      console.error('保存节次失败:', error)
+      ElMessage.error(error?.response?.data?.message || '保存失败')
+    } finally {
+      submitLoading.value = false
     }
   })
 }
@@ -372,7 +354,7 @@ const handleCurrentChange = (page: number) => {
 }
 
 onMounted(() => {
-  // 初始化数据
+  fetchTimeSlots()
 })
 </script>
 
@@ -462,27 +444,27 @@ onMounted(() => {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .search-input,
   .search-select {
     width: 100%;
   }
-  
+
   .action-buttons {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .section-range {
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
   }
-  
+
   .section-input {
     width: 100%;
   }
-  
+
   .section-separator {
     display: none;
   }

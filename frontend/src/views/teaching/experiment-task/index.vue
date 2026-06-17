@@ -16,7 +16,7 @@
               <el-icon><Plus /></el-icon>新增任务
             </el-button>
             <el-button type="warning" @click="handleExport">
-              <el-icon><Download /></el-icon>导出任务表
+              <el-icon><Download /></el-icon>导出Excel
             </el-button>
           </div>
         </div>
@@ -256,7 +256,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Search, Refresh, Plus, Download } from '@element-plus/icons-vue'
 import { get, post, put, del } from '@/utils/request'
-import { downloadDocx } from '@/utils/export'
+import { downloadExcel } from '@/utils/export'
 
 const loading = ref(false)
 const dialogVisible = ref(false)
@@ -502,20 +502,7 @@ const handleCurrentChange = () => {
 
 const handleExport = async () => {
   try {
-    await downloadDocx('/export/task-overview', 'experiment-task-overview.docx', {
-      year: new Date().getFullYear().toString(),
-      semester: '一'
-    })
-    ElMessage.success('瀵煎嚭鎴愬姛')
-    return
-    const url = ''
-    const link = document.createElement('a')
-    link.href = url
-    link.download = '实验课程教学任务一览表.docx'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
+    await downloadExcel('/experiment-tasks/export', 'experiment-tasks.xlsx')
     ElMessage.success('导出成功')
   } catch (error) {
     ElMessage.error('导出失败')

@@ -1,0 +1,78 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">设备管理</text>
+    <text class="hero-subtitle">维护设备资产信息、借用状态、维修状态和报废状态。</text>
+  </view>
+
+  <view class="form-card">
+    <view class="section-header compact-header">
+      <text class="section-title">{{form.id ? '编辑设备' : '新增设备'}}</text>
+      <text wx:if="{{form.id}}" class="link-text" bindtap="resetForm">取消编辑</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">设备名称</text>
+      <input class="form-input" placeholder="例如：三维扫描仪" data-field="name" bindinput="handleInput" value="{{form.name}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">设备编号</text>
+      <input class="form-input" placeholder="例如：EQ-3D-09" data-field="no" bindinput="handleInput" value="{{form.no}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">设备型号</text>
+      <input class="form-input" placeholder="例如：Artec Eva" data-field="model" bindinput="handleInput" value="{{form.model}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">设备分类</text>
+      <input class="form-input" placeholder="例如：成像设备" data-field="category" bindinput="handleInput" value="{{form.category}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">存放位置</text>
+      <input class="form-input" placeholder="例如：实验中心仓库 A 区" data-field="location" bindinput="handleInput" value="{{form.location}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">设备状态</text>
+      <view class="capsule-row">
+        <view
+          wx:for="{{statusOptions}}"
+          wx:key="key"
+          class="capsule {{form.status === item.key ? 'active' : ''}}"
+          data-status="{{item.key}}"
+          bindtap="selectStatus"
+        >
+          {{item.label}}
+        </view>
+      </view>
+      <text class="status-note">报废后的设备会保留在台账中，但不能再发起借用。</text>
+    </view>
+    <view class="btn-row">
+      <button class="btn-primary" bindtap="submit">{{form.id ? '保存修改' : '新增设备'}}</button>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">设备列表</text>
+    <text class="section-meta">{{list.length}} 台</text>
+  </view>
+  <view wx:for="{{list}}" wx:key="id" class="list-card">
+    <view class="card-title-row">
+      <view>
+        <text class="card-title">{{item.name}}</text>
+        <text class="card-subtitle">{{item.no}} · {{item.category}}</text>
+      </view>
+      <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+    </view>
+    <view class="card-line">
+      <text>型号</text>
+      <text class="meta-text">{{item.model}}</text>
+    </view>
+    <view class="card-line">
+      <text>位置</text>
+      <text class="meta-text">{{item.location}}</text>
+    </view>
+    <view class="btn-row">
+      <button class="btn-secondary" data-id="{{item.id}}" bindtap="editItem">编辑</button>
+      <button class="btn-light btn-danger" data-id="{{item.id}}" bindtap="scrapItem" disabled="{{item.status === 'scrapped'}}">{{item.status === 'scrapped' ? '已报废' : '设备报废'}}</button>
+    </view>
+  </view>
+</view>

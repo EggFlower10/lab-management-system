@@ -1,0 +1,44 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">签到管理</text>
+    <text class="hero-subtitle">{{course ? course.name : courseName}} · 实时查看学生签到签退和报告提交情况。</text>
+  </view>
+
+  <view wx:if="{{summary && summary.length}}" class="grid-two summary-grid">
+    <view wx:for="{{summary}}" wx:key="label" class="stat-card summary-card">
+      <text class="summary-value">{{item.value}}</text>
+      <text class="summary-label">{{item.label}}</text>
+      <text class="summary-intro">{{item.intro}}</text>
+    </view>
+  </view>
+
+  <block wx:if="{{students.length}}">
+    <view wx:for="{{students}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.studentNo}} · {{item.department}}</text>
+        </view>
+        <text class="status-tag {{item.signOutAt ? 'status-completed' : item.signInAt ? 'status-approved' : 'status-pending'}}">{{item.attendanceStatus}}</text>
+      </view>
+      <view class="card-line">
+        <text>签到时间</text>
+        <text class="meta-text">{{item.signInAt || '未签到'}}</text>
+      </view>
+      <view class="card-line">
+        <text>签退时间</text>
+        <text class="meta-text">{{item.signOutAt || '未签退'}}</text>
+      </view>
+      <view class="card-line">
+        <text>实验报告</text>
+        <text class="meta-text">{{item.reportSubmitted ? '已提交' : '待提交'}}</text>
+      </view>
+      <view class="btn-row">
+        <button class="btn-secondary" data-action="signIn" data-student-id="{{item.id}}" bindtap="updateAttendance">标记签到</button>
+        <button class="btn-light" data-action="signOut" data-student-id="{{item.id}}" bindtap="updateAttendance">标记签退</button>
+        <button class="btn-light" data-action="reset" data-student-id="{{item.id}}" bindtap="updateAttendance">重置</button>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">当前暂无学生签到数据。</view>
+</view>

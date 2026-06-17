@@ -1,0 +1,155 @@
+<view class="page-shell without-tabbar">
+  <view class="hero-card">
+    <text class="hero-title">设备借用中心</text>
+    <text class="hero-subtitle">{{subtitle}}</text>
+  </view>
+
+  <view class="grid-three stats-grid">
+    <view class="stat-card mini-stat">
+      <text class="stat-value">{{list.length}}</text>
+      <text class="stat-label">当前列表</text>
+    </view>
+    <view class="stat-card mini-stat">
+      <text class="stat-value">{{availableCount}}</text>
+      <text class="stat-label">可借设备</text>
+    </view>
+    <view class="stat-card mini-stat">
+      <text class="stat-value">{{activeBorrowCount}}</text>
+      <text class="stat-label">进行中</text>
+    </view>
+  </view>
+
+  <view class="btn-row" wx:if="{{canOpenApproval}}">
+    <button class="btn-secondary" bindtap="openApproval">前往审批中心</button>
+  </view>
+
+  <view class="form-card">
+    <view class="form-item">
+      <text class="form-label">搜索设备</text>
+      <input class="form-input" value="{{keyword}}" bindinput="handleInput" bindconfirm="handleSearch" placeholder="设备名称 / 编号 / 型号 / 分类" />
+    </view>
+    <view class="btn-row search-row">
+      <button class="btn-secondary" bindtap="handleSearch">立即搜索</button>
+    </view>
+    <view class="form-item">
+      <text class="form-label">分类筛选</text>
+      <view class="capsule-row">
+        <view
+          wx:for="{{categoryTabs}}"
+          wx:key="key"
+          class="capsule {{activeCategory === item.key ? 'active' : ''}}"
+          data-category="{{item.key}}"
+          bindtap="changeCategory"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </view>
+    <view class="form-item">
+      <text class="form-label">状态筛选</text>
+      <view class="capsule-row">
+        <view
+          wx:for="{{statusTabs}}"
+          wx:key="key"
+          class="capsule {{activeStatus === item.key ? 'active' : ''}}"
+          data-status="{{item.key}}"
+          bindtap="changeStatus"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">设备列表</text>
+    <text class="section-meta">支持扫码借还</text>
+  </view>
+  <block wx:if="{{list.length}}">
+    <view wx:for="{{list}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">{{item.no}} · {{item.model}}</text>
+        </view>
+        <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+      </view>
+      <view class="card-line">
+        <text>分类</text>
+        <text class="meta-text">{{item.category}}</text>
+      </view>
+      <view class="card-line">
+        <text>位置</text>
+        <text class="meta-text">{{item.location}}</text>
+      </view>
+      <view class="btn-row">
+        <button class="btn-primary" data-id="{{item.id}}" bindtap="applyBorrow" disabled="{{item.status !== 'idle'}}">申请借用</button>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">暂无匹配设备，可以调整关键词或筛选条件后重试。</view>
+
+  <view class="section-header">
+    <text class="section-title">{{isAdmin ? '借用流程' : '我的借用记录'}}</text>
+    <text class="section-meta">{{records.length}} 条</text>
+  </view>
+  <view class="capsule-row record-tabs">
+    <view
+      wx:for="{{recordTabs}}"
+      wx:key="key"
+      class="capsule {{activeRecordStatus === item.key ? 'active' : ''}}"
+      data-status="{{item.key}}"
+      bindtap="changeRecordStatus"
+    >
+      {{item.label}}
+    </view>
+  </view>
+  <view class="notice-card scan-tips">
+    <text class="card-title">扫码说明</text>
+    <text class="card-subtitle">设备二维码可写入设备编号或系统生成的借还码。申请通过后点击“扫码借出”，归还时点击“扫码归还”。超期将自动推送订阅提醒和小程序通知。</text>
+  </view>
+  <block wx:if="{{records.length}}">
+    <view wx:for="{{records}}" wx:key="id" class="list-card">
+      <view class="card-title-row">
+        <view>
+          <text class="card-title">{{item.equipmentName}}</text>
+          <text class="card-subtitle">{{item.equipmentNo}} · {{item.model}}</text>
+        </view>
+        <text class="status-tag {{item.statusClass}}">{{item.statusText}}</text>
+      </view>
+      <view class="card-line" wx:if="{{isAdmin}}">
+        <text>申请人</text>
+        <text class="meta-text">{{item.applicantName}}</text>
+      </view>
+      <view class="card-line">
+        <text>借用周期</text>
+        <text class="meta-text">{{item.borrowWindow}}</text>
+      </view>
+      <view class="card-line">
+        <text>设备分类</text>
+        <text class="meta-text">{{item.category}}</text>
+      </view>
+      <view class="card-line">
+        <text>使用用途</text>
+        <text class="meta-text">{{item.purpose}}</text>
+      </view>
+      <view class="card-line" wx:if="{{item.borrowedAt}}">
+        <text>借出时间</text>
+        <text class="meta-text">{{item.borrowedAt}}</text>
+      </view>
+      <view class="card-line" wx:if="{{item.returnedAt}}">
+        <text>归还时间</text>
+        <text class="meta-text">{{item.returnedAt}}</text>
+      </view>
+      <view class="card-line" wx:if="{{item.canBorrowByScan || item.canReturnByScan}}">
+        <text>借还码</text>
+        <text class="meta-text">{{item.scanCode}}</text>
+      </view>
+      <view class="btn-row" wx:if="{{item.canBorrowByScan || item.canReturnByScan}}">
+        <button wx:if="{{item.canBorrowByScan}}" class="btn-primary" data-id="{{item.id}}" bindtap="scanBorrow">扫码借出</button>
+        <button wx:if="{{item.canReturnByScan}}" class="btn-primary" data-id="{{item.id}}" bindtap="scanReturn">扫码归还</button>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="empty-card">当前筛选下没有借用记录。</view>
+</view>

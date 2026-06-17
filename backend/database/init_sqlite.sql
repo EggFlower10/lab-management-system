@@ -198,9 +198,16 @@ CREATE TABLE IF NOT EXISTS Edu_Course (
   CourseID INTEGER PRIMARY KEY AUTOINCREMENT,
   CourseName VARCHAR(100) NOT NULL,
   CourseCode VARCHAR(50) NOT NULL,
+  CourseNameEn VARCHAR(100),
+  CourseNature VARCHAR(50),
   CourseType VARCHAR(50),
-  Credit REAL,
-  Hours INTEGER,
+  Credits REAL,
+  TotalHours INTEGER,
+  LectureHours INTEGER,
+  PracticeHours INTEGER,
+  LabHours INTEGER,
+  OnlineHours INTEGER,
+  OpenSemesters VARCHAR(50),
   SortOrder INTEGER DEFAULT 0,
   Description VARCHAR(500),
   Status INTEGER DEFAULT 1,
@@ -901,14 +908,14 @@ INSERT INTO sys_config (configKey, name, configValue, `group`, description, sort
 ('version', '系统版本', '1.0.0', 'system', '系统版本', 2, 1);
 
 -- 课程数据
-INSERT INTO Edu_Course (CourseName, CourseCode, CourseType, Credit, Hours, SortOrder, Description, Status) VALUES
-('高等数学', 'MA001', '公共课', 4.0, 64, 1, '高等数学课程', 1),
-('大学物理', 'PH001', '公共课', 3.0, 48, 2, '大学物理课程', 1),
-('程序设计', 'CS001', '专业课', 4.0, 64, 3, '程序设计课程', 1),
-('数据结构与算法', 'CS002', '专业课', 4.0, 64, 4, '数据结构与算法课程', 1),
-('操作系统', 'CS003', '专业课', 4.0, 64, 5, '操作系统课程', 1),
-('计算机网络', 'CS004', '专业课', 3.0, 48, 6, '计算机网络课程', 1),
-('数据库原理', 'CS005', '专业课', 3.0, 48, 7, '数据库原理课程', 1);
+INSERT INTO Edu_Course (CourseName, CourseCode, CourseNameEn, CourseNature, CourseType, Credits, TotalHours, LectureHours, PracticeHours, LabHours, OnlineHours, OpenSemesters, SortOrder, Description, Status) VALUES
+('高等数学', 'MA001', 'Advanced Mathematics', 'Compulsory', '公共课', 4.0, 64, 48, 0, 16, 0, '1,2', 1, '高等数学课程', 1),
+('大学物理', 'PH001', 'University Physics', 'Compulsory', '公共课', 3.0, 48, 32, 0, 16, 0, '1,2', 2, '大学物理课程', 1),
+('程序设计', 'CS001', 'Programming', 'Compulsory', '专业课', 4.0, 64, 32, 16, 16, 0, '2', 3, '程序设计课程', 1),
+('数据结构与算法', 'CS002', 'Data Structures', 'Compulsory', '专业课', 4.0, 64, 32, 16, 16, 0, '3', 4, '数据结构与算法课程', 1),
+('操作系统', 'CS003', 'Operating Systems', 'Compulsory', '专业课', 4.0, 64, 32, 16, 16, 0, '4', 5, '操作系统课程', 1),
+('计算机网络', 'CS004', 'Computer Networks', 'Elective', '专业课', 3.0, 48, 32, 0, 16, 0, '4', 6, '计算机网络课程', 1),
+('数据库原理', 'CS005', 'Database Principles', 'Elective', '专业课', 3.0, 48, 32, 0, 16, 0, '5', 7, '数据库原理课程', 1);
 
 -- 学期数据
 INSERT INTO Edu_Semester (SemesterCode, SemesterName, SchoolYear, SemesterNo, StartDate, EndDate, TotalWeeks, IsActive, SortOrder, Status) VALUES
@@ -950,18 +957,13 @@ INSERT INTO edu_teaching_task (semester_id, course_id, class_id, teacher_id, wee
 (1, 5, 1, 4, 4, 64, 'A101实验室', 1),
 (1, 6, 3, 3, 3, 48, 'B201实验室', 1);
 
--- 节次数据
+-- 节次数据（合并节次）
 INSERT INTO edu_time_slot (name, start_time, end_time, sort, type, status) VALUES
-('第一节', '08:00:00', '08:45:00', 1, 'morning', 1),
-('第二节', '08:55:00', '09:40:00', 2, 'morning', 1),
-('第三节', '10:00:00', '10:45:00', 3, 'morning', 1),
-('第四节', '10:55:00', '11:40:00', 4, 'morning', 1),
-('第五节', '14:00:00', '14:45:00', 5, 'afternoon', 1),
-('第六节', '14:55:00', '15:40:00', 6, 'afternoon', 1),
-('第七节', '16:00:00', '16:45:00', 7, 'afternoon', 1),
-('第八节', '16:55:00', '17:40:00', 8, 'afternoon', 1),
-('第九节', '19:00:00', '19:45:00', 9, 'evening', 1),
-('第十节', '19:55:00', '20:40:00', 10, 'evening', 1);
+('第1-2节', '08:00:00', '09:40:00', 1, 'morning', 1),
+('第3-4节', '10:00:00', '11:40:00', 2, 'morning', 1),
+('第5-6节', '14:00:00', '15:40:00', 3, 'afternoon', 1),
+('第7-8节', '16:00:00', '17:40:00', 4, 'afternoon', 1),
+('第9-10节', '19:00:00', '20:40:00', 5, 'evening', 1);
 
 -- 校区数据
 INSERT INTO ven_campus (code, name, address, description, status) VALUES
@@ -1148,6 +1150,32 @@ CREATE INDEX IF NOT EXISTS idx_equ_borrow_equipment ON equ_borrow_record(equipme
 CREATE INDEX IF NOT EXISTS idx_equ_borrow_applicant ON equ_borrow_record(applicant_id);
 CREATE INDEX IF NOT EXISTS idx_equ_borrow_status ON equ_borrow_record(status);
 
+-- 设备续借申请表
+CREATE TABLE IF NOT EXISTS equ_renew_request (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  renew_code VARCHAR(100) NOT NULL,
+  borrow_record_id INTEGER NOT NULL,
+  equipment_id INTEGER NOT NULL,
+  equipment_name VARCHAR(200),
+  asset_code VARCHAR(100),
+  applicant_id INTEGER NOT NULL,
+  applicant_name VARCHAR(100) NOT NULL,
+  original_return_date TIMESTAMP NOT NULL,
+  new_return_date TIMESTAMP NOT NULL,
+  renew_reason TEXT,
+  status VARCHAR(50) DEFAULT 'pending',
+  approval_user_id INTEGER,
+  approval_user_name VARCHAR(100),
+  approval_time TIMESTAMP,
+  approval_comment VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_equ_renew_code ON equ_renew_request(renew_code);
+CREATE INDEX IF NOT EXISTS idx_equ_renew_borrow ON equ_renew_request(borrow_record_id);
+CREATE INDEX IF NOT EXISTS idx_equ_renew_equipment ON equ_renew_request(equipment_id);
+CREATE INDEX IF NOT EXISTS idx_equ_renew_status ON equ_renew_request(status);
+
 -- 设备维修记录表
 CREATE TABLE IF NOT EXISTS equ_repair_record (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1261,3 +1289,176 @@ INSERT INTO edu_training_plan (course_code, organization_mode, training_location
 ('CS302', '校内集中', '实验楼B', '掌握移动应用开发技能', '第一周：React Native基础；第二周：组件开发；第三周：API对接；第四周：项目实战', '理论+实践结合', '项目答辩', '1. 每日签到；2. 周汇报；3. 最终答辩', '同意开设', '同意开设', 1),
 ('SE301', '校外集中', '软件园实训基地', '企业级软件开发实践', '第一周：需求分析；第二周：架构设计；第三周：编码实现；第四周：测试部署', '企业导师指导', '综合', '1. 企业考核；2. 项目验收；3. 实习报告', '同意开设', '同意开设', 1),
 ('EE301', '校内集中', '实验楼B', '电子电路设计与实践', '第一周：电路原理复习；第二周：PCB设计；第三周：焊接调试；第四周：项目展示', '理论+实践', '实操', '1. 过程考核；2. 作品展示；3. 答辩', '同意开设', '同意开设', 1);
+
+-- =====================================================
+-- 实验室耗材管理表
+-- =====================================================
+
+-- 耗材分类表
+CREATE TABLE IF NOT EXISTS consumable_category (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(500),
+  sort_order INTEGER DEFAULT 0,
+  status INTEGER DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_consumable_category_name ON consumable_category(name);
+
+-- 供应商表
+CREATE TABLE IF NOT EXISTS consumable_supplier (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(200) NOT NULL,
+  contact VARCHAR(100),
+  phone VARCHAR(50),
+  email VARCHAR(100),
+  address VARCHAR(500),
+  status INTEGER DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_consumable_supplier_name ON consumable_supplier(name);
+
+-- 耗材表
+CREATE TABLE IF NOT EXISTS consumable (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  consumable_no VARCHAR(100) NOT NULL,
+  consumable_name VARCHAR(200) NOT NULL,
+  category_id INTEGER,
+  specification VARCHAR(200),
+  unit VARCHAR(50) NOT NULL,
+  stock INTEGER DEFAULT 0,
+  min_stock INTEGER DEFAULT 0,
+  max_stock INTEGER DEFAULT 0,
+  location VARCHAR(200),
+  supplier_id INTEGER,
+  price DECIMAL(10,2) DEFAULT 0,
+  status INTEGER DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_consumable_no ON consumable(consumable_no);
+CREATE INDEX IF NOT EXISTS idx_consumable_category ON consumable(category_id);
+CREATE INDEX IF NOT EXISTS idx_consumable_supplier ON consumable(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_consumable_status ON consumable(status);
+
+-- 入库表
+CREATE TABLE IF NOT EXISTS stock_in (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  in_no VARCHAR(100) NOT NULL,
+  consumable_id INTEGER NOT NULL,
+  consumable_name VARCHAR(200),
+  quantity INTEGER NOT NULL,
+  price DECIMAL(10,2) DEFAULT 0,
+  supplier_id INTEGER,
+  supplier_name VARCHAR(200),
+  operator_id INTEGER,
+  operator_name VARCHAR(100),
+  in_time TIMESTAMP,
+  status VARCHAR(50) DEFAULT 'pending',
+  remark VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_stock_in_no ON stock_in(in_no);
+CREATE INDEX IF NOT EXISTS idx_stock_in_consumable ON stock_in(consumable_id);
+CREATE INDEX IF NOT EXISTS idx_stock_in_status ON stock_in(status);
+
+-- 出库表
+CREATE TABLE IF NOT EXISTS stock_out (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  out_no VARCHAR(100) NOT NULL,
+  consumable_id INTEGER NOT NULL,
+  consumable_name VARCHAR(200),
+  quantity INTEGER NOT NULL,
+  applicant_id INTEGER,
+  applicant_name VARCHAR(100),
+  purpose VARCHAR(500),
+  lab_name VARCHAR(200),
+  status VARCHAR(50) DEFAULT 'pending',
+  approval_user_id INTEGER,
+  approval_user_name VARCHAR(100),
+  approval_time TIMESTAMP,
+  approval_comment VARCHAR(500),
+  out_time TIMESTAMP,
+  remark VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_stock_out_no ON stock_out(out_no);
+CREATE INDEX IF NOT EXISTS idx_stock_out_consumable ON stock_out(consumable_id);
+CREATE INDEX IF NOT EXISTS idx_stock_out_status ON stock_out(status);
+CREATE INDEX IF NOT EXISTS idx_stock_out_applicant ON stock_out(applicant_id);
+
+-- 库存日志表
+CREATE TABLE IF NOT EXISTS stock_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  consumable_id INTEGER NOT NULL,
+  consumable_name VARCHAR(200),
+  change_type VARCHAR(50) NOT NULL,
+  before_stock INTEGER DEFAULT 0,
+  after_stock INTEGER DEFAULT 0,
+  quantity INTEGER NOT NULL,
+  operator_id INTEGER,
+  operator_name VARCHAR(100),
+  related_no VARCHAR(100),
+  remark VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_stock_log_consumable ON stock_log(consumable_id);
+CREATE INDEX IF NOT EXISTS idx_stock_log_type ON stock_log(change_type);
+
+-- =====================================================
+-- 耗材管理初始化数据
+-- =====================================================
+
+-- 耗材分类数据
+INSERT INTO consumable_category (name, description, sort_order) VALUES
+('化学试剂', '各类化学实验试剂', 1),
+('电子元件', '电子元器件', 2),
+('医疗耗材', '医疗实验用品', 3),
+('办公耗材', '办公用消耗品', 4),
+('工具类', '各类工具', 5);
+
+-- 供应商数据
+INSERT INTO consumable_supplier (name, contact, phone, address) VALUES
+('国药集团', '张经理', '13800138001', '北京市朝阳区'),
+('赛默飞世尔', '李经理', '13800138002', '上海市浦东新区'),
+('安捷伦科技', '王经理', '13800138003', '深圳市南山区'),
+('本地供应商', '陈经理', '13800138004', '本地工业园区');
+
+-- 耗材数据
+INSERT INTO consumable (consumable_no, consumable_name, category_id, specification, unit, stock, min_stock, max_stock, location, supplier_id, price) VALUES
+('CONS001', '无水乙醇', 1, '分析纯 500ml', '瓶', 50, 10, 100, '试剂柜A-1', 1, 25.00),
+('CONS002', '盐酸', 1, '分析纯 500ml', '瓶', 30, 5, 50, '试剂柜A-2', 1, 18.00),
+('CONS003', '氢氧化钠', 1, '分析纯 500g', '瓶', 40, 8, 80, '试剂柜A-3', 1, 15.00),
+('CONS004', '电阻100Ω', 2, '1/4W 100欧姆', '个', 200, 50, 500, '电子元件柜B-1', 2, 0.10),
+('CONS005', '电容10μF', 2, '电解电容 10μF/25V', '个', 150, 30, 300, '电子元件柜B-2', 2, 0.50),
+('CONS006', '棉签', 3, '医用无菌', '包', 100, 20, 200, '医疗柜C-1', 3, 5.00),
+('CONS007', '手套', 3, '一次性乳胶', '盒', 50, 10, 100, '医疗柜C-2', 3, 20.00),
+('CONS008', '打印纸', 4, 'A4 70g', '包', 30, 5, 50, '办公用品柜D-1', 4, 25.00),
+('CONS009', '签字笔', 4, '黑色 0.5mm', '盒', 20, 5, 50, '办公用品柜D-2', 4, 15.00),
+('CONS010', '螺丝刀套装', 5, '12件套装', '套', 10, 2, 20, '工具柜E-1', 4, 80.00);
+
+-- 入库记录数据
+INSERT INTO stock_in (in_no, consumable_id, consumable_name, quantity, price, supplier_id, supplier_name, operator_id, operator_name, in_time, status) VALUES
+('IN202401001', 1, '无水乙醇', 50, 25.00, 1, '国药集团', 1, '管理员', '2024-01-10 09:00:00', 'approved'),
+('IN202401002', 2, '盐酸', 30, 18.00, 1, '国药集团', 1, '管理员', '2024-01-12 10:00:00', 'approved'),
+('IN202401003', 4, '电阻100Ω', 200, 0.10, 2, '赛默飞世尔', 1, '管理员', '2024-01-15 14:00:00', 'approved');
+
+-- 出库记录数据
+INSERT INTO stock_out (out_no, consumable_id, consumable_name, quantity, applicant_id, applicant_name, purpose, lab_name, status, approval_user_id, approval_user_name, approval_time) VALUES
+('OUT202401001', 1, '无水乙醇', 5, 2, '李老师', '实验教学', '化学实验室', 'approved', 1, '管理员', '2024-01-11 10:00:00'),
+('OUT202401002', 4, '电阻100Ω', 50, 3, '王老师', '电子实验', '电子实验室', 'approved', 1, '管理员', '2024-01-16 15:00:00'),
+('OUT202401003', 7, '手套', 10, 4, '张老师', '生物实验', '生物实验室', 'approved', 1, '管理员', '2024-01-18 09:00:00');
+
+-- 库存日志数据
+INSERT INTO stock_log (consumable_id, consumable_name, change_type, before_stock, after_stock, quantity, operator_id, operator_name, related_no) VALUES
+(1, '无水乙醇', 'initial', 0, 50, 50, 1, '管理员', 'IN202401001'),
+(1, '无水乙醇', 'out', 50, 45, -5, 1, '管理员', 'OUT202401001'),
+(2, '盐酸', 'initial', 0, 30, 30, 1, '管理员', 'IN202401002'),
+(4, '电阻100Ω', 'initial', 0, 200, 200, 1, '管理员', 'IN202401003'),
+(4, '电阻100Ω', 'out', 200, 150, -50, 1, '管理员', 'OUT202401002'),
+(7, '手套', 'initial', 0, 50, 50, 1, '管理员', 'INIT'),
+(7, '手套', 'out', 50, 40, -10, 1, '管理员', 'OUT202401003');

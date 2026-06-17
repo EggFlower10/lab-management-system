@@ -1,0 +1,78 @@
+{
+  "pages": [
+    "pages/login/index",
+    "pages/login/bind/index",
+    "pages/home/index",
+    "pages/lab/index",
+    "pages/course/index",
+    "pages/message/index",
+    "pages/mine/index",
+    "pages/lab/detail/index",
+    "pages/reservation/create/index",
+    "pages/reservation/list/index",
+    "pages/reservation/detail/index",
+    "pages/equipment/index",
+    "pages/equipment/apply/index",
+    "pages/consumable/index",
+    "pages/consumable/apply/index",
+    "pages/report/submit/index",
+    "pages/admin/approval/index",
+    "pages/admin/dashboard/index",
+    "pages/admin/users/index",
+    "pages/course/publish/index",
+    "pages/course/attendance/index",
+    "pages/course/grades/index",
+    "pages/admin/lab-manage/index",
+    "pages/admin/equipment-manage/index",
+    "pages/admin/consumable-manage/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "实验室管理",
+    "navigationBarBackgroundColor": "#1c4fa1",
+    "backgroundColor": "#f4f7fb",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#7a869a",
+    "selectedColor": "#1c4fa1",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "assets/tabbar/home.png",
+        "selectedIconPath": "assets/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/lab/index",
+        "text": "实验室",
+        "iconPath": "assets/tabbar/lab.png",
+        "selectedIconPath": "assets/tabbar/lab-active.png"
+      },
+      {
+        "pagePath": "pages/course/index",
+        "text": "课程",
+        "iconPath": "assets/tabbar/course.png",
+        "selectedIconPath": "assets/tabbar/course-active.png"
+      },
+      {
+        "pagePath": "pages/message/index",
+        "text": "消息",
+        "iconPath": "assets/tabbar/message.png",
+        "selectedIconPath": "assets/tabbar/message-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "assets/tabbar/mine.png",
+        "selectedIconPath": "assets/tabbar/mine-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
